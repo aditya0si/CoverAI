@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.pnpm-store
+.poetry
+.venv
+.git
+.idea
+.vscode
+*.log
+apps/api/__pycache__
+apps/api/*/__pycache__
+apps/api/alembic/versions/__pycache__

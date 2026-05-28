@@ -1,0 +1,107 @@
+# Dependencies
+node_modules
+/apps/web/node_modules
+/packages/ui/node_modules
+
+# Next.js
+.next/
+out/
+
+# Production build outputs
+dist/
+build/
+*.gemini/
+
+# Turborepo
+.turbo
+
+# Python files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Poetry & virtual environments
+.venv
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# IDEs
+.cursor/
+.idea/
+.vscode/
+
+# Local utility and test scripts
+/*.py
+
+# Playwright and Testing output
+playwright-report/
+test-results/
+
+# Temp screenshot files and test logs
+*.png
+api_errors.txt
+api_logs.txt
+api_recent.txt
+debug_out.txt
+e2e_out.txt
+sampletext.txt.txt

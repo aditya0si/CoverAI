@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: coverai-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=coverai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d coverai" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: coverai-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: coverai-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/coverai
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=AIzaSyCsC7x5ERNpYDfHF7-i1Q9inBvs-FPCoEk
+      - JWT_SECRET=9f4e2a8d1c7b3e6f0a5d9c2b8f1e4a7d3c6b9e2f5a8d1c4b7e0f3a6d9c2b5e8
+      - ALLOWED_ORIGINS=http://localhost:3000
+      - STORAGE_BUCKET=coverai-documents-bucket
+      - GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+    volumes:
+      - ./apps/api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: coverai-web
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/coverai
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=AIzaSyCsC7x5ERNpYDfHF7-i1Q9inBvs-FPCoEk
+      - JWT_SECRET=9f4e2a8d1c7b3e6f0a5d9c2b8f1e4a7d3c6b9e2f5a8d1c4b7e0f3a6d9c2b5e8
+      - ALLOWED_ORIGINS=http://localhost:3000
+      - STORAGE_BUCKET=coverai-documents-bucket
+      - GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared-types/node_modules
+      - /app/packages/ui/node_modules
+      - /app/.pnpm-store
+    depends_on:
+      api:
+        condition: service_started
+
+  api-prod:
+    profiles:
+      - production
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: coverai-api-prod
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.production
+    environment:
+      - ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web-prod:
+    profiles:
+      - production
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: coverai-web-prod
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      api-prod:
+        condition: service_started
+
+volumes:
+  postgres_data:
