@@ -13,6 +13,25 @@ class AITriageAssessment(BaseSchema):
     red_flags: List[str]
     recommended_action: str
     summary_for_officer: str
+    customer_prediction: Optional[str] = None
+    customer_explanation: Optional[str] = None
+
+class PolicySummary(BaseSchema):
+    """Embedded policy context for insurer claim detail view."""
+    id: uuid.UUID
+    policy_number: str
+    insurer_name: str
+    vehicle_registration: str
+    vehicle_make: str
+    vehicle_model: str
+    vehicle_year: int
+    policy_type: str
+    start_date: datetime
+    end_date: datetime
+    premium_amount: float
+    sum_insured: float
+    status: str
+    extracted_text: Optional[str] = None
 
 class ClaimCreate(BaseSchema):
     policy_id: uuid.UUID
@@ -65,6 +84,8 @@ class ClaimOut(BaseSchema):
     claim_type: ClaimType
     incident_date: datetime
     estimated_amount: float
+    ai_customer_prediction: Optional[str] = None
+    ai_customer_explanation: Optional[str] = None
     created_at: datetime
 
 class ClaimDetailResponse(BaseSchema):
@@ -80,12 +101,15 @@ class ClaimDetailResponse(BaseSchema):
     assigned_officer_id: Optional[uuid.UUID] = None
     ai_risk_score: Optional[float] = None
     ai_summary: Optional[AITriageAssessment] = None
+    ai_customer_prediction: Optional[str] = None
+    ai_customer_explanation: Optional[str] = None
     estimated_amount: float
     approved_amount: Optional[float] = None
     created_at: datetime
     updated_at: datetime
     images: List[ClaimImageOut] = []
     status_history: List[AuditLogOut] = []
+    policy: Optional[PolicySummary] = None
 
     @field_validator("ai_summary", mode="before")
     @classmethod
@@ -94,10 +118,20 @@ class ClaimDetailResponse(BaseSchema):
             try:
                 return json.loads(v)
             except Exception:
-                pass
+                return {
+                    "risk_score": 0.5,
+                    "coverage_assessment": "unclear",
+                    "key_policy_clauses": [],
+                    "red_flags": [],
+                    "recommended_action": "standard_review",
+                    "summary_for_officer": v,
+                    "customer_prediction": "needs_more_info",
+                    "customer_explanation": "Your claim is currently under standard review."
+                }
         return v
 
 class ClaimCreateResponse(BaseSchema):
     claim_id: uuid.UUID
     claim_number: str
     status: ClaimStatus
+

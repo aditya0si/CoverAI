@@ -120,7 +120,14 @@ async def seed_data():
             status=ClaimStatus.under_review,
             assigned_officer_id=officer_user.id,
             ai_risk_score=0.08,
-            ai_summary="Front/rear bumper damage only. Standard low-speed collision. Low risk of fraud.",
+            ai_summary=(
+                '{"risk_score": 0.08, "coverage_assessment": "likely_covered", '
+                '"key_policy_clauses": ["Own Damage Section I - Loss or Damage to the Vehicle"], '
+                '"red_flags": [], "recommended_action": "standard_review", '
+                '"summary_for_officer": "Front/rear bumper damage only. Standard low-speed collision. Low risk of fraud.", '
+                '"customer_prediction": "likely_accepted", '
+                '"customer_explanation": "Based on a review of the own damage section of your policy, accidental damage to your front/rear bumper is likely covered."}'
+            ),
             estimated_amount=15000.00,
             approved_amount=None
         )

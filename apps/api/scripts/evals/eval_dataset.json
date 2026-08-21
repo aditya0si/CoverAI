@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What is the deductible for a comprehensive car insurance policy?",
+    "expected_answer": "The deductible is INR 1,000 for standard comprehensive car insurance.",
+    "policy_id": "WILL_BE_REPLACED_AT_RUNTIME"
+  },
+  {
+    "question": "Does this policy cover damage from a flood?",
+    "expected_answer": "Yes, damage from natural disasters including floods and earthquakes is covered under the comprehensive policy.",
+    "policy_id": "WILL_BE_REPLACED_AT_RUNTIME"
+  },
+  {
+    "question": "What is the status of my claim CLM-123456?",
+    "expected_answer": "Claim CLM-123456 is currently under review.",
+    "policy_id": "WILL_BE_REPLACED_AT_RUNTIME"
+  }
+]

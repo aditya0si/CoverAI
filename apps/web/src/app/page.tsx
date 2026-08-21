@@ -1,200 +1,367 @@
-import { Button } from "@coverai/ui";
-import { Shield, Cpu, Zap, ChevronRight, CheckCircle } from "lucide-react";
-import Link from "next/link";
+import React from 'react';
+import Link from 'next/link';
+import {
+  ShieldCheck,
+  Brain,
+  UploadCloud,
+  FileCheck2,
+  Lock,
+  ArrowRight,
+  Eye,
+  Check,
+  Layers,
+  Sparkles,
+  ChevronRight,
+} from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header */}
-      <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#191919] flex flex-col selection:bg-[#191919] selection:text-[#FAF8F5]">
+      {/* ── Editorial Sticky Header ────────────────────────────────────────── */}
+      <header className="border-b border-[#E2DDD4] bg-[#FAF8F5]/85 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Shield className="h-5 w-5 text-white" />
+            <div className="h-8 w-8 rounded-xl bg-[#191919] text-[#FAF8F5] flex items-center justify-center shadow-xs">
+              <ShieldCheck className="h-4.5 w-4.5" />
             </div>
-            <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            <span className="font-serif-heading font-bold text-xl tracking-tight text-[#191919]">
               CoverAI
             </span>
           </div>
-          
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#technology" className="hover:text-white transition-colors">Technology</a>
-            <a href="#developers" className="hover:text-white transition-colors">Developers</a>
+
+          <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-[#6E6862]">
+            <a href="#features" className="hover:text-[#191919] transition-colors">
+              Capabilities
+            </a>
+            <a href="#how-it-works" className="hover:text-[#191919] transition-colors">
+              Workflow
+            </a>
+            <a href="#trust" className="hover:text-[#191919] transition-colors">
+              DPDP & Trust
+            </a>
           </nav>
 
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="text-slate-400 hover:text-white">
-                Sign In
-              </Button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="text-xs font-medium text-[#6E6862] hover:text-[#191919] transition-colors px-3 py-2"
+            >
+              Sign In
             </Link>
-            <Link href="/register">
-              <Button className="bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-md shadow-blue-600/20">
-                Get Started
-              </Button>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#191919] hover:bg-[#2D2D2D] text-[#FAF8F5] px-4.5 py-2.5 rounded-full transition-all shadow-xs group"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
       <main className="flex-1">
-        <section className="relative pt-24 pb-20 px-6 max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/5 text-blue-400 text-xs font-semibold mb-6 animate-pulse">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-              Production Ready Monorepo Scaffolded
+        {/* ── Editorial Hero Section ────────────────────────────────────────── */}
+        <section className="pt-20 sm:pt-28 pb-20 px-6 max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E2DDD4] bg-[#F1EDE4] text-[#6E6862] text-[11px] font-medium mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D2654A]" />
+            <span>DPDP Act 2023 Compliant · AI Auto Insurance Intelligence</span>
+          </div>
+
+          <h1 className="font-serif-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal text-[#191919] leading-[1.1] tracking-tight mb-8">
+            Fast, transparent vehicle claims powered by explainable AI.
+          </h1>
+
+          <p className="text-[#6E6862] text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10 font-normal">
+            Upload your policy, submit damage evidence with photos, and receive verifiable claim assessments in seconds with real-time clause matching.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center max-w-md mx-auto">
+            <Link
+              href="/register"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#191919] hover:bg-[#2D2D2D] text-[#FAF8F5] text-xs font-semibold rounded-full shadow-sm transition-all group cursor-pointer"
+            >
+              <span>Start Your Claim</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <a
+              href="#how-it-works"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#F1EDE4] hover:bg-[#EAE4D8] text-[#191919] border border-[#E2DDD4] text-xs font-semibold rounded-full transition-all cursor-pointer"
+            >
+              <span>How It Works</span>
+            </a>
+          </div>
+
+          {/* Minimalist Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-16 pt-8 border-t border-[#E2DDD4]/60 text-xs text-[#8C847B]">
+            <div className="flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-[#191919]" />
+              <span>Fernet AES-256 Field Encryption</span>
             </div>
-            
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-8 leading-[1.1] bg-gradient-to-r from-white via-slate-100 to-slate-500 bg-clip-text text-transparent">
-              Next-Generation <br />
-              Vehicle Insurance Powered by AI
-            </h1>
-            
-            <p className="text-slate-400 text-lg md:text-xl mb-10 max-w-2xl">
-              An enterprise-grade platform combining FastAPI, Next.js 14, and deep learning claims automation. Secure, hot-reloaded, and ready for deployment.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-sm">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/25">
-                Calculate Premium
-                <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-slate-800 bg-slate-900/50 hover:bg-slate-900 text-slate-300 font-semibold">
-                Read API Docs
-              </Button>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#191919]" />
+              <span>India DPDP Act 2023 Verified</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#D2654A]" />
+              <span>Google Gemini AI Reasoning Engine</span>
             </div>
           </div>
         </section>
 
-        {/* Tech Stack Grid */}
-        <section id="features" className="py-20 border-t border-slate-900 bg-slate-950/40 relative">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-xl mx-auto mb-16">
-              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                Platform Architecture
+        {/* ── Feature Capabilities Grid ──────────────────────────────────────── */}
+        <section id="features" className="py-24 border-t border-[#E2DDD4] bg-[#FAF8F5]">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="max-w-xl mb-16">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#D2654A] block mb-2">
+                Capabilities
+              </span>
+              <h2 className="font-serif-heading text-3xl sm:text-4xl text-[#191919] font-normal tracking-tight">
+                Designed for clarity, built for accountability.
               </h2>
-              <p className="text-slate-400 text-sm">
-                Under the hood of the CoverAI enterprise monorepo configuration.
-              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Card 1 */}
-              <div className="p-8 rounded-2xl border border-slate-900 bg-slate-900/20 backdrop-blur-sm hover:border-slate-800 transition-all duration-300 group">
-                <div className="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
-                  <Cpu className="h-6 w-6" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Feature 1 */}
+              <div className="p-7 rounded-2xl bg-[#F1EDE4] border border-[#E2DDD4] flex flex-col justify-between hover:border-[#8C847B] transition-all">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E2DDD4] flex items-center justify-center text-[#191919] mb-5">
+                    <Brain className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    AI Triage Co-pilot
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Evaluates damage photos, inspects policy exclusions, and drafts risk scores with clear explanations.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-3">FastAPI Backend</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  High-performance API built with Python 3.11, structured around Poetry. Includes SQLAlchemy 2.0 async engine and settings validation.
-                </p>
+                <div className="mt-6 pt-4 border-t border-[#E2DDD4]/60 flex items-center gap-1 text-[11px] font-semibold text-[#191919]">
+                  <span>Verifiable reasoning</span>
+                </div>
               </div>
 
-              {/* Card 2 */}
-              <div className="p-8 rounded-2xl border border-slate-900 bg-slate-900/20 backdrop-blur-sm hover:border-slate-800 transition-all duration-300 group">
-                <div className="h-12 w-12 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-500 mb-6 group-hover:scale-110 transition-transform">
-                  <Zap className="h-6 w-6" />
+              {/* Feature 2 */}
+              <div className="p-7 rounded-2xl bg-[#F1EDE4] border border-[#E2DDD4] flex flex-col justify-between hover:border-[#8C847B] transition-all">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E2DDD4] flex items-center justify-center text-[#191919] mb-5">
+                    <UploadCloud className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    Instant Policy Ingestion
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Upload any standard motor policy PDF. Extracts IDV, deductibles, riders, and validity dates in seconds.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-3">Next.js 14 Web Portal</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  State-of-the-art frontend leveraging App Router, strict TypeScript mode, Tailwind CSS, and TanStack React Query.
-                </p>
+                <div className="mt-6 pt-4 border-t border-[#E2DDD4]/60 flex items-center gap-1 text-[11px] font-semibold text-[#191919]">
+                  <span>OCR & clause parser</span>
+                </div>
               </div>
 
-              {/* Card 3 */}
-              <div className="p-8 rounded-2xl border border-slate-900 bg-slate-900/20 backdrop-blur-sm hover:border-slate-800 transition-all duration-300 group">
-                <div className="h-12 w-12 rounded-xl bg-purple-600/10 flex items-center justify-center text-purple-500 mb-6 group-hover:scale-110 transition-transform">
-                  <Shield className="h-6 w-6" />
+              {/* Feature 3 */}
+              <div className="p-7 rounded-2xl bg-[#F1EDE4] border border-[#E2DDD4] flex flex-col justify-between hover:border-[#8C847B] transition-all">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E2DDD4] flex items-center justify-center text-[#191919] mb-5">
+                    <FileCheck2 className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    DPDP Consent Portal
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Granular consent switches, automated JSON data exports, and right-to-erasure with 30-day grace periods.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-3">Shared UI & Types</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Centralized Zod validation schemas for claims/policies and standard design tokens ensuring ultimate visual consistency.
-                </p>
+                <div className="mt-6 pt-4 border-t border-[#E2DDD4]/60 flex items-center gap-1 text-[11px] font-semibold text-[#191919]">
+                  <span>Statutory compliance</span>
+                </div>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="p-7 rounded-2xl bg-[#F1EDE4] border border-[#E2DDD4] flex flex-col justify-between hover:border-[#8C847B] transition-all">
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E2DDD4] flex items-center justify-center text-[#191919] mb-5">
+                    <Eye className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    Live Claim Audit Trail
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Full transparent status progression with immutable audit records from submission to surveyor settlement.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-[#E2DDD4]/60 flex items-center gap-1 text-[11px] font-semibold text-[#191919]">
+                  <span>7-year IRDAI retention</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Infrastructure Status */}
-        <section id="technology" className="py-20 border-t border-slate-900">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="rounded-3xl border border-slate-800/60 bg-gradient-to-b from-slate-900/40 to-slate-950/20 p-8 md:p-12 backdrop-blur-md relative overflow-hidden">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white leading-tight">
-                    Scaffolded & Monitored Docker Infrastructure
-                  </h3>
-                  <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-                    A fully-managed `docker-compose.yml` launches persistent PostgreSQL v15 databases, Redis v7 message caches, API containers, and Next.js hot-reload development stacks.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                      <span className="text-sm font-medium text-slate-300">Hot-reload enabled for frontend & backend</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                      <span className="text-sm font-medium text-slate-300">Postgres health-check checks service readiness</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                      <span className="text-sm font-medium text-slate-300">FastAPI backend loads from root environment configurations</span>
-                    </div>
-                  </div>
-                </div>
+        {/* ── Workflow Steps ────────────────────────────────────────────────── */}
+        <section id="how-it-works" className="py-24 border-t border-[#E2DDD4] bg-[#F7F4EE]">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="text-center max-w-xl mx-auto mb-16">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#D2654A] block mb-2">
+                Workflow
+              </span>
+              <h2 className="font-serif-heading text-3xl sm:text-4xl text-[#191919] font-normal tracking-tight">
+                Three steps from policy to payout.
+              </h2>
+            </div>
 
-                <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-6 font-mono text-xs text-slate-400 shadow-2xl relative">
-                  <div className="flex items-center gap-2 border-b border-slate-800/60 pb-4 mb-4">
-                    <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-green-500/80" />
-                    <span className="text-slate-500 ml-2">docker-compose.yml</span>
-                  </div>
-                  <pre className="overflow-x-auto text-blue-400">
-{`services:
-  postgres:
-    image: postgres:15-alpine
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-  
-  redis:
-    image: redis:7-alpine
-    
-  api:
-    build: ./apps/api
-    volumes:
-      - ./apps/api:/app
-      
-  web:
-    build: .
-    volumes:
-      - .:/app`}
-                  </pre>
+            <div className="grid md:grid-cols-3 gap-8 relative">
+              {/* Step 1 */}
+              <div className="bg-[#FAF8F5] border border-[#E2DDD4] rounded-2xl p-7 flex flex-col justify-between">
+                <div>
+                  <span className="font-serif-heading text-3xl font-light text-[#8C847B] block mb-4">
+                    01
+                  </span>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    Ingest Policy
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Upload your comprehensive or third-party vehicle insurance document. Our extractor parses terms and exclusions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-[#FAF8F5] border border-[#E2DDD4] rounded-2xl p-7 flex flex-col justify-between">
+                <div>
+                  <span className="font-serif-heading text-3xl font-light text-[#8C847B] block mb-4">
+                    02
+                  </span>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    Submit Evidence
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Capture vehicle damage photos, log the incident time and location, and submit via our streamlined claim wizard.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-[#FAF8F5] border border-[#E2DDD4] rounded-2xl p-7 flex flex-col justify-between">
+                <div>
+                  <span className="font-serif-heading text-3xl font-light text-[#8C847B] block mb-4">
+                    03
+                  </span>
+                  <h3 className="font-serif-heading text-lg font-semibold text-[#191919] mb-2">
+                    Explainable AI Review
+                  </h3>
+                  <p className="text-xs text-[#6E6862] leading-relaxed">
+                    Get instant predictions, clause citations, and estimated repair amounts before surveyor assignment.
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ── Dark Contrast Trust Section (Anthropic Style) ────────────────── */}
+        <section id="trust" className="py-24 bg-[#191919] text-[#FAF8F5]">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#D2654A] block mb-3">
+                  Data Governance
+                </span>
+                <h2 className="font-serif-heading text-3xl sm:text-4xl text-[#FAF8F5] font-normal tracking-tight mb-6">
+                  Engineered around Indian data privacy law.
+                </h2>
+                <p className="text-[#A69F96] text-sm leading-relaxed mb-8">
+                  CoverAI implements the Digital Personal Data Protection (DPDP) Act 2023 from first principles. Your sensitive personal and vehicular data remains under your absolute control.
+                </p>
+
+                <div className="space-y-3.5 text-xs text-[#D8D2C7]">
+                  {[
+                    'Granular consent revocation for AI processing & data sharing',
+                    'Right to Data Portability: export your complete dossier as JSON',
+                    'Right to Erasure with 30-day pending withdrawal grace period',
+                    'Fernet symmetric encryption for all PII fields at rest',
+                    'Immutable audit records maintained in compliance with IRDAI standards',
+                  ].map((text) => (
+                    <div key={text} className="flex items-start gap-3">
+                      <div className="w-4 h-4 rounded-full bg-[#FAF8F5]/10 text-[#FAF8F5] flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                      <span>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Minimalist Trust Card */}
+              <div className="bg-[#242424] border border-[#333333] rounded-3xl p-8 sm:p-10">
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-[#333333]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] text-[#191919] flex items-center justify-center font-serif-heading font-bold text-lg">
+                    §
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#FAF8F5]">DPDP Act 2023 Standard</h4>
+                    <p className="text-[11px] text-[#A69F96]">India Regulatory Compliance Stack</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs text-[#A69F96]">
+                  <div className="flex justify-between pb-2.5 border-b border-[#333333]">
+                    <span>Consent Framework</span>
+                    <span className="text-[#FAF8F5] font-mono font-medium">Notice & Choice §6</span>
+                  </div>
+                  <div className="flex justify-between pb-2.5 border-b border-[#333333]">
+                    <span>Data Retention</span>
+                    <span className="text-[#FAF8F5] font-mono font-medium">7-Year Regulatory</span>
+                  </div>
+                  <div className="flex justify-between pb-2.5 border-b border-[#333333]">
+                    <span>Cryptographic Cipher</span>
+                    <span className="text-[#FAF8F5] font-mono font-medium">AES-128-CBC + HMAC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Audit Log Integrity</span>
+                    <span className="text-[#FAF8F5] font-mono font-medium">Append-only</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Bottom CTA ───────────────────────────────────────────────────── */}
+        <section className="py-24 border-t border-[#E2DDD4] text-center px-6">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-serif-heading text-3xl sm:text-4xl text-[#191919] font-normal tracking-tight mb-4">
+              Experience the future of auto insurance claims.
+            </h2>
+            <p className="text-[#6E6862] text-sm leading-relaxed mb-8 max-w-lg mx-auto">
+              Create an account in minutes or explore the platform as a customer, insurance advisor, or claims officer.
+            </p>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-[#191919] hover:bg-[#2D2D2D] text-[#FAF8F5] text-xs font-semibold rounded-full shadow-sm transition-all group"
+            >
+              <span>Get Started Now</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-8 bg-slate-950">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      {/* ── Minimalist Footer ────────────────────────────────────────────── */}
+      <footer className="border-t border-[#E2DDD4] py-8 bg-[#FAF8F5] text-xs text-[#8C847B]">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-blue-500" />
-            <span>&copy; {new Date().getFullYear()} CoverAI. All rights reserved.</span>
+            <span className="font-serif-heading font-bold text-[#191919]">CoverAI</span>
+            <span>· Intelligent Motor Claims Platform</span>
           </div>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-slate-400 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-slate-400 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-slate-400 transition-colors">Security</a>
+            <Link href="/privacy-policy" className="hover:text-[#191919] transition-colors">
+              Privacy Policy
+            </Link>
+            <a href="#trust" className="hover:text-[#191919] transition-colors">
+              DPDP Compliance
+            </a>
+            <a href="#features" className="hover:text-[#191919] transition-colors">
+              Documentation
+            </a>
           </div>
         </div>
       </footer>

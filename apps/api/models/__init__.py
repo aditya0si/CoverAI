@@ -12,6 +12,10 @@ from .ai_call_logs import AICallLog
 from .data_export_requests import DataExportRequest, ExportStatus
 from .data_deletion_requests import DataDeletionRequest, DeletionStatus
 
+# Re-export exceptions for services that reference models.NotFoundException etc.
+from core.exceptions import CoverAIException, NotFoundException, ForbiddenException  # noqa: E402
+from .policy_chunks import PolicyChunk
+
 __all__ = [
     "Base",
     "User",
@@ -36,4 +40,8 @@ __all__ = [
     "ExportStatus",
     "DataDeletionRequest",
     "DeletionStatus",
+    "CoverAIException",
+    "NotFoundException",
+    "ForbiddenException",
+    "PolicyChunk",
 ]

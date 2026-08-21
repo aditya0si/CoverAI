@@ -13,6 +13,7 @@ from core.storage import get_storage_backend
 from core.exceptions import NotFoundException, ForbiddenException, CoverAIException
 from core.audit import log_action
 from services.pdf_service import extract_text_from_pdf, parse_policy_metadata, PdfExtractionError
+from services.embedding_service import generate_and_store_embeddings
 import models
 from schemas.policy import PolicyUploadResponse, PolicyDetailOut
 
@@ -20,33 +21,6 @@ policies_router = APIRouter(prefix="/policies", tags=["Policies"])
 
 def generate_policy_number() -> str:
     return "POL-" + "".join(random.choices(string.digits, k=8))
-
-
-async def log_audit_action(
-    actor_id: uuid.UUID,
-    action: str,
-    resource_type: str,
-    resource_id: uuid.UUID,
-    before_state: dict = None,
-    after_state: dict = None
-):
-    """Background task to commit audit logs to the database asynchronously."""
-    from core.database import SessionLocal
-    async with SessionLocal() as db:
-        try:
-            log_record = models.AuditLog(
-                actor_id=actor_id,
-                action=action,
-                resource_type=resource_type,
-                resource_id=resource_id,
-                before_state=before_state,
-                after_state=after_state
-            )
-            db.add(log_record)
-            await db.commit()
-        except Exception:
-            # Silence background logging failures to prevent request blocking
-            pass
 
 
 @policies_router.post("/upload", response_model=PolicyUploadResponse, status_code=status.HTTP_201_CREATED)
@@ -128,6 +102,9 @@ async def upload_policy(
             "vehicle_registration": vehicle_registration
         }
     )
+
+    # 7. Trigger async chunking and embedding
+    background_tasks.add_task(generate_and_store_embeddings, policy_id)
 
     return {
         "policy_id": policy_id,

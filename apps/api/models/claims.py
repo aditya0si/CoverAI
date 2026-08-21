@@ -74,6 +74,8 @@ class Claim(Base):
     
     ai_risk_score: Mapped[float] = mapped_column(Float, nullable=True)
     ai_summary: Mapped[str] = mapped_column(nullable=True)
+    ai_customer_prediction: Mapped[str] = mapped_column(String(50), nullable=True)
+    ai_customer_explanation: Mapped[str] = mapped_column(nullable=True)
     
     estimated_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     approved_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=True)

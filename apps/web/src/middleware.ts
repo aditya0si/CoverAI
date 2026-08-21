@@ -1,30 +1,46 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 /**
- * Next.js Edge Middleware – authentication guard.
- *
- * Strategy:
- *  - Presence of the HttpOnly 'refresh_token' cookie = authenticated.
- *  - The 'user_role' cookie (set by the login client after /auth/login) is
- *    used for role-based redirect when visiting auth pages while logged in.
- *  - All protected portal prefixes require the refresh_token cookie.
+ * Decode a JWT payload without verifying the signature.
+ * Used here only for routing decisions (redirect direction),
+ * not for authentication — the backend still verifies the token.
  */
+function decodeJwtPayload(token: string): { role?: string } | null {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      Buffer.from(base64, 'base64')
+        .toString('binary')
+        .split('')
+        .map((c: string) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('refresh_token');
-  const roleCookie = request.cookies.get('user_role')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
+  const accessToken = request.cookies.get('access_token')?.value;
   const { pathname } = request.nextUrl;
+
+  // Role comes from the server-issued access_token JWT, not a client-set cookie
+  const jwtPayload = accessToken ? decodeJwtPayload(accessToken) : null;
+  const role = jwtPayload?.role;
 
   // ── Auth page guard ──────────────────────────────────────────────────────
   const authPages = ['/login', '/register'];
   const isAuthPage = authPages.includes(pathname);
 
-  // Already authenticated → send to the correct role portal
-  if (isAuthPage && token) {
+  if (isAuthPage && refreshToken) {
     const url = request.nextUrl.clone();
-    if (roleCookie === 'advisor') {
+    if (role === 'advisor') {
       url.pathname = '/advisor/customers';
-    } else if (roleCookie === 'insurer_officer') {
-      url.pathname = '/insurer/queue';
+    } else if (role === 'insurer_officer') {
+      url.pathname = '/insurer/dashboard';
     } else {
       url.pathname = '/dashboard';
     }
@@ -35,7 +51,7 @@ export function middleware(request: NextRequest) {
   const protectedPrefixes = ['/dashboard', '/policies', '/claims', '/insurer', '/advisor'];
   const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
-  if (isProtected && !token) {
+  if (isProtected && !refreshToken) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', pathname);
@@ -45,9 +61,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-/**
- * Configure paths that should trigger this middleware.
- */
 export const config = {
   matcher: [
     '/dashboard/:path*',

@@ -106,3 +106,85 @@ We provide a `Makefile` at the root to automate common lifecycle tasks:
     ```tsx
     import { Button } from "@coverai/ui";
     ```
+
+---
+
+## 🚢 Production Deployment
+
+### Architecture
+- **Frontend**: Vercel (Next.js)
+- **Backend**: Railway (FastAPI)
+- **Database**: Supabase (PostgreSQL)
+- **Redis**: Upstash (serverless)
+- **AI**: Google Gemini API
+
+### Prerequisites
+1. Push code to GitHub
+2. Create a [Supabase](https://supabase.com) project → get connection string
+3. Create a [Railway](https://railway.app) project → connect GitHub repo
+4. Create a [Vercel](https://vercel.com) project → connect GitHub repo
+5. Get a [Gemini API key](https://makersuite.google.com/app/apikey)
+
+### Environment Variables
+
+#### Railway (Backend)
+Set these in Railway dashboard → Variables:
+```
+DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:6543/postgres
+REDIS_URL=rediss://default:[PASSWORD]@[HOST]:6379
+GEMINI_API_KEY=your_key
+JWT_SECRET=generate_with_openssl_rand_hex_32
+ALLOWED_ORIGINS=https://your-app.vercel.app
+STORAGE_BUCKET=coverai-documents-bucket
+FIELD_ENCRYPTION_KEY=generate_with_fernet
+```
+
+#### Vercel (Frontend)
+Set in Vercel dashboard → Environment Variables:
+```
+NEXT_PUBLIC_API_URL=https://your-backend.railway.app/api/v1
+```
+
+### Deployment Steps
+
+#### 1. Database Migrations
+After Railway deploys, run migrations:
+```bash
+# Connect to Railway and run:
+cd apps/api
+alembic upgrade head
+```
+
+Or use the seed script for demo data:
+```bash
+python scripts/seed_dev.py
+```
+
+#### 2. Deploy Backend (Railway)
+1. Connect GitHub repo to Railway
+2. Select `apps/api` as root directory
+3. Railway auto-detects Dockerfile
+4. Add environment variables
+5. Deploy → get URL like `https://coverai-api.up.railway.app`
+
+#### 3. Deploy Frontend (Vercel)
+1. Import repo in Vercel
+2. Set Root Directory to `apps/web`
+3. Add `NEXT_PUBLIC_API_URL` environment variable
+4. Deploy → get URL like `https://coverai.vercel.app`
+
+#### 4. Update CORS
+Update Railway `ALLOWED_ORIGINS` to include your Vercel URL.
+
+### CI/CD
+GitHub Actions workflow runs on PRs and main branch pushes:
+- Lint + type check frontend
+- Run backend tests
+- Auto-deploy to Railway/Vercel on main
+
+### Health Checks
+- Backend: `https://your-backend.railway.app/health`
+- Frontend: `https://your-app.vercel.app`
+
+### Troubleshooting
+See [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md) for local development.

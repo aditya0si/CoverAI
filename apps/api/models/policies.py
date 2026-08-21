@@ -79,6 +79,10 @@ class Policy(Base):
     conversations: Mapped[list["Conversation"]] = relationship(
         back_populates="policy"
     )
+    chunks: Mapped[list["PolicyChunk"]] = relationship(
+        back_populates="policy",
+        cascade="all, delete-orphan"
+    )
     
     def __repr__(self) -> str:
         return f"<Policy {self.policy_number} ({self.status.value})>"

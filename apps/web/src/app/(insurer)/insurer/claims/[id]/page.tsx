@@ -472,21 +472,116 @@ export default function InsurerClaimReviewPage() {
         )}
       </div>
 
-      {/* Split Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* ── Left Panel (60%) ─────────────────────────────────────────────── */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Claim Details */}
+      {/* 3-Panel Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* ── LEFT PANEL: Policy Context (4 cols) ─────────────────────────── */}
+        <div className="lg:col-span-4 space-y-5">
+          <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <Info className="w-3.5 h-3.5 text-blue-400" />
+              Policy Context
+            </h2>
+
+            {claim.policy ? (
+              <div className="space-y-4">
+                {/* Policy Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Policy Number</span>
+                    <span className="text-xs font-bold text-white">{claim.policy.policy_number}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Insurer</span>
+                    <span className="text-xs font-bold text-blue-400">{claim.policy.insurer_name}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Policy Type</span>
+                    <span className="text-xs font-semibold text-slate-300 capitalize">{claim.policy.policy_type?.replace(/_/g, ' ')}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Status</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border capitalize ${
+                      claim.policy.status === 'active' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' :
+                      'bg-rose-500/15 text-rose-400 border-rose-500/25'
+                    }`}>{claim.policy.status}</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-800 pt-3 space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Vehicle Details</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[9px] text-slate-600 block">Registration</span>
+                      <span className="text-xs text-slate-300 font-semibold">{claim.policy.vehicle_registration}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-600 block">Make</span>
+                      <span className="text-xs text-slate-300 font-semibold">{claim.policy.vehicle_make}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-600 block">Model</span>
+                      <span className="text-xs text-slate-300 font-semibold">{claim.policy.vehicle_model}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-600 block">Year</span>
+                      <span className="text-xs text-slate-300 font-semibold">{claim.policy.vehicle_year}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-800 pt-3 space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Coverage Details</p>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-slate-500">Sum Insured</span>
+                      <span className="text-xs font-bold text-emerald-400">₹{Number(claim.policy.sum_insured).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-slate-500">Premium</span>
+                      <span className="text-xs font-semibold text-slate-300">₹{Number(claim.policy.premium_amount).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-slate-500">Valid From</span>
+                      <span className="text-xs text-slate-300">{new Date(claim.policy.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-slate-500">Valid Until</span>
+                      <span className="text-xs text-slate-300">{new Date(claim.policy.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 italic">Policy details unavailable.</p>
+            )}
+          </section>
+
+          {/* Extracted Policy Text Viewer */}
+          {claim.policy?.extracted_text && (
+            <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Extracted Policy Text</h2>
+              <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+                <pre className="text-[10px] text-slate-400 whitespace-pre-wrap font-mono leading-relaxed">
+                  {claim.policy.extracted_text}
+                </pre>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── CENTER PANEL: Evidence (4 cols) ────────────────────────────── */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Claim Details Summary */}
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Claim Details</h2>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
               {[
                 ['Claim Type', claim.claim_type?.replace(/_/g, ' ')],
                 ['Incident Date', new Date(claim.incident_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })],
-                ['Incident Location', claim.incident_location],
+                ['Location', claim.incident_location],
                 ['Estimated Amount', `₹${Number(claim.estimated_amount).toLocaleString('en-IN')}`],
                 ['Approved Amount', claim.approved_amount ? `₹${Number(claim.approved_amount).toLocaleString('en-IN')}` : '—'],
-                ['Policy ID', claim.policy_id],
               ].map(([label, value]) => (
                 <div key={label} className="space-y-0.5">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
@@ -511,8 +606,8 @@ export default function InsurerClaimReviewPage() {
           </section>
         </div>
 
-        {/* ── Right Panel (40%) ─────────────────────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-5">
+        {/* ── RIGHT PANEL: AI + Decision (4 cols) ───────────────────────── */}
+        <div className="lg:col-span-4 space-y-5">
           {/* AI Triage Summary */}
           <AITriageCard
             summary={typeof claim.ai_summary === 'object' ? claim.ai_summary as AITriageAssessment : null}

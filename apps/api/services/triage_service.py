@@ -10,6 +10,7 @@ import google.generativeai as genai
 from core.config import settings
 from core.database import SessionLocal
 from core.storage import get_storage_backend, LocalStorageBackend, S3StorageBackend
+from core.metrics import ai_calls_total
 import models
 
 logger = logging.getLogger("uvicorn.error")
@@ -102,7 +103,9 @@ async def run_ai_triage(claim_id: uuid.UUID):
                 "  \"key_policy_clauses\": [\"list of relevant clauses found in policy\"],\n"
                 "  \"red_flags\": [\"any inconsistencies or suspicious indicators\"],\n"
                 "  \"recommended_action\": \"auto_approve | standard_review | escalate | request_documents\",\n"
-                "  \"summary_for_officer\": \"2-3 sentence plain English summary for the claims officer\"\n"
+                "  \"summary_for_officer\": \"2-3 sentence plain English summary for the claims officer\",\n"
+                "  \"customer_prediction\": \"likely_accepted | possibly_accepted | likely_rejected | needs_more_info\",\n"
+                "  \"customer_explanation\": \"A clear, reassuring but honest 3-5 sentence explanation for the customer about why their claim is likely/unlikely to be accepted. Reference specific policy clauses and their description. Use simple language.\"\n"
                 "}\n\n"
                 f"CLAIM DETAILS:\n"
                 f"- Claim Type: {claim.claim_type.value}\n"
@@ -127,7 +130,6 @@ async def run_ai_triage(claim_id: uuid.UUID):
             duration_ms = int((time.time() - start_time) * 1000)
             
             # Increment Prometheus counter
-            from core.metrics import ai_calls_total
             ai_calls_total.labels(service="triage", model=TRIAGE_MODEL).inc()
             
             # Extract response text and token usage
@@ -143,8 +145,14 @@ async def run_ai_triage(claim_id: uuid.UUID):
                 
                 claim.ai_risk_score = risk_score
                 claim.ai_summary = raw_content
+                
+                # Store customer-facing prediction fields
+                claim.ai_customer_prediction = parsed_json.get("customer_prediction")
+                claim.ai_customer_explanation = parsed_json.get("customer_explanation")
+                
                 logger.info(
-                    f"[AI Triage] Claim {claim_id} triage completed. Risk score: {risk_score}"
+                    f"[AI Triage] Claim {claim_id} triage completed. Risk score: {risk_score}, "
+                    f"Customer prediction: {claim.ai_customer_prediction}"
                 )
             except Exception as parse_err:
                 logger.error(
@@ -257,7 +265,6 @@ async def run_image_ai_analysis(claim_image_id: uuid.UUID):
             duration_ms = int((time.time() - start_time) * 1000)
             
             # Increment Prometheus counter
-            from core.metrics import ai_calls_total
             ai_calls_total.labels(service="image", model=VISION_MODEL).inc()
             
             raw_content = response.text

@@ -293,7 +293,7 @@ async def update_consent_record(
         action="UPDATE_CONSENT",
         resource_type="consent_record",
         resource_id=consent_record.id if getattr(consent_record, "id", None) else current_user.id,
-        before=before_state,
+        before_state=before_state,
         after={
             "consent_type": consent_type,
             "granted": payload.granted,

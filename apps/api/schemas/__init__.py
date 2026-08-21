@@ -13,7 +13,7 @@ class BaseSchema(BaseModel):
 # ==========================================
 # User Schemas
 # ==========================================
-UserRole = Literal["admin", "agent", "customer"]
+UserRole = Literal["admin", "insurer_officer", "advisor", "aggregator", "customer"]
 
 class UserBase(BaseSchema):
     email: str = Field(..., pattern=r"^[\w\.-]+@[\w\.-]+\.\w+$")
@@ -102,6 +102,7 @@ class PolicyOut(PolicyBase):
 # ==========================================
 from .claim import (
     AITriageAssessment,
+    PolicySummary,
     ClaimCreate,
     ClaimUpdate,
     ClaimStatusTransition,

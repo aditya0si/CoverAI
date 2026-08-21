@@ -96,6 +96,45 @@ async def create_assignment(
     }
 
 
+@advisors_router.get("/my-advisors")
+async def get_my_advisors(
+    current_user: models.User = Depends(require_role("customer")),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    GET /advisors/my-advisors
+    Returns all advisors actively linked to the current customer.
+    """
+    stmt = select(models.AdvisorAssignment).where(
+        models.AdvisorAssignment.customer_id == current_user.id,
+        models.AdvisorAssignment.is_active == True
+    )
+    result = await db.execute(stmt)
+    assignments = result.scalars().all()
+
+    advisors_map = {}
+    if assignments:
+        adv_ids = [a.advisor_id for a in assignments]
+        adv_stmt = select(
+            models.User.id, models.User.full_name, models.User.email, models.User.phone
+        ).where(models.User.id.in_(adv_ids))
+        adv_result = await db.execute(adv_stmt)
+        for row in adv_result.mappings():
+            advisors_map[row["id"]] = row
+
+    return [
+        {
+            "assignment_id": str(a.id),
+            "advisor_id": str(a.advisor_id),
+            "advisor_name": advisors_map.get(a.advisor_id, {}).get("full_name"),
+            "advisor_email": advisors_map.get(a.advisor_id, {}).get("email"),
+            "advisor_phone": advisors_map.get(a.advisor_id, {}).get("phone"),
+            "assigned_at": a.granted_at,
+        }
+        for a in assignments
+    ]
+
+
 @advisors_router.delete("/assignments/{assignment_id}")
 async def delete_assignment(
     assignment_id: uuid.UUID,
@@ -152,45 +191,59 @@ async def get_my_customers(
     result = await db.execute(stmt)
     assignments = result.scalars().all()
 
-    customers = []
-    for assignment in assignments:
-        customer = await db.get(models.User, assignment.customer_id)
-        if customer:
-            # Count active policies
-            policy_count_result = await db.execute(
-                select(func.count(models.Policy.id)).where(
-                    models.Policy.user_id == customer.id,
-                    models.Policy.status == models.PolicyStatus.active,
-                )
-            )
-            active_policy_count = policy_count_result.scalar() or 0
+    # Single join - user + policy + claim count in one query (no N+1)
+    open_statuses = [
+        models.ClaimStatus.submitted,
+        models.ClaimStatus.under_review,
+        models.ClaimStatus.surveyor_assigned,
+        models.ClaimStatus.draft,
+    ]
+    join_stmt = (
+        select(
+            models.User.id.label("user_id"),
+            models.User.full_name,
+            models.User.email,
+            models.User.phone,
+            models.AdvisorAssignment.granted_at,
+            func.count(models.Policy.id).label("active_policy_count"),
+            func.count(models.Claim.id).label("open_claim_count"),
+        )
+        .join(
+            models.AdvisorAssignment,
+            models.AdvisorAssignment.customer_id == models.User.id,
+        )
+        .outerjoin(
+            models.Policy,
+            (models.Policy.user_id == models.User.id)
+            & (models.Policy.status == models.PolicyStatus.active),
+        )
+        .outerjoin(
+            models.Claim,
+            (models.Claim.claimant_id == models.User.id)
+            & (models.Claim.status.in_(open_statuses)),
+        )
+        .where(
+            models.AdvisorAssignment.advisor_id == current_user.id,
+            models.AdvisorAssignment.is_active == True,
+        )
+        .group_by(models.User.id, models.AdvisorAssignment.granted_at)
+    )
+    join_result = await db.execute(join_stmt)
+    rows = join_result.mappings().all()
 
-            # Count open claims (not approved/rejected/settled)
-            open_statuses = [
-                models.ClaimStatus.submitted,
-                models.ClaimStatus.under_review,
-                models.ClaimStatus.surveyor_assigned,
-                models.ClaimStatus.draft,
-            ]
-            claim_count_result = await db.execute(
-                select(func.count(models.Claim.id)).where(
-                    models.Claim.claimant_id == customer.id,
-                    models.Claim.status.in_(open_statuses),
-                )
-            )
-            open_claim_count = claim_count_result.scalar() or 0
+    return [
+        {
+            "customer_id": str(row["user_id"]),
+            "customer_name": row["full_name"],
+            "customer_email": row["email"],
+            "customer_phone": row["phone"],
+            "active_policy_count": row["active_policy_count"] or 0,
+            "open_claim_count": row["open_claim_count"] or 0,
+            "assigned_at": row["granted_at"],
+        }
+        for row in rows
+    ]
 
-            customers.append({
-                "customer_id": str(customer.id),
-                "customer_name": customer.full_name,
-                "customer_email": customer.email,
-                "customer_phone": customer.phone,
-                "active_policy_count": active_policy_count,
-                "open_claim_count": open_claim_count,
-                "assigned_at": assignment.granted_at,
-            })
-
-    return customers
 
 
 async def _verify_advisor_customer(advisor_id: uuid.UUID, customer_id: uuid.UUID, db: AsyncSession):

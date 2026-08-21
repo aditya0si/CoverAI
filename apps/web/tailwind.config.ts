@@ -17,7 +17,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
+        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        serif: ["var(--font-serif)", "Playfair Display", "Georgia", "Cambria", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -53,6 +54,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        anthropic: {
+          cream: "#FAF8F5",
+          sand: "#F3EFE6",
+          charcoal: "#191919",
+          terracotta: "#D2654A",
+          clay: "#C0583E",
+          stone: "#E5E0D6",
+          olive: "#3D4438",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -78,3 +88,4 @@ const config: Config = {
   plugins: [require("tailwindcss-animate")],
 };
 export default config;
+

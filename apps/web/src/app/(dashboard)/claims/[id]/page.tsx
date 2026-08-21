@@ -168,7 +168,7 @@ export default function ClaimDetailPage() {
               <div className="space-y-1">
                 <span className="text-[10px] text-slate-500 flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Location Location</span>
+                  <span>Incident Location</span>
                 </span>
                 <p className="font-semibold text-slate-200 truncate">{claim.incident_location}</p>
               </div>
@@ -204,6 +204,37 @@ export default function ClaimDetailPage() {
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Maximize2 className="w-5 h-5 text-white" />
                     </div>
+
+                    {/* AI Damage Overlay Tags */}
+                    {img.ai_damage_tags && Object.keys(img.ai_damage_tags).length > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2.5 pt-6">
+                        <div className="flex flex-wrap gap-1">
+                          {Object.entries(img.ai_damage_tags).slice(0, 3).map(([tag, val]) => {
+                            const confidence = typeof val === 'number' ? val : 0.5;
+                            const severityColor = confidence >= 0.7 
+                              ? 'bg-rose-500/25 text-rose-300 border-rose-500/30' 
+                              : confidence >= 0.4 
+                                ? 'bg-amber-500/25 text-amber-300 border-amber-500/30' 
+                                : 'bg-emerald-500/25 text-emerald-300 border-emerald-500/30';
+                            return (
+                              <span key={tag} className={`px-1.5 py-0.5 rounded text-[8px] font-bold border backdrop-blur-sm ${severityColor}`}>
+                                {tag}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        {img.ai_damage_confidence !== null && img.ai_damage_confidence !== undefined && (
+                          <div className="mt-1.5 w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all ${
+                                img.ai_damage_confidence >= 0.7 ? 'bg-rose-500' : img.ai_damage_confidence >= 0.4 ? 'bg-amber-500' : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${Math.round(img.ai_damage_confidence * 100)}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -266,6 +297,100 @@ export default function ClaimDetailPage() {
                 <p className="text-slate-300 font-normal leading-relaxed">
                   {customerFriendlySummary}
                 </p>
+              </div>
+            </section>
+          )}
+
+          {/* ── AI PREDICTION CARD ──────────────────────────────────────────── */}
+          {claim.ai_customer_prediction ? (() => {
+            const prediction = claim.ai_customer_prediction;
+            const explanation = claim.ai_customer_explanation || '';
+            
+            const isAccepted = prediction === 'likely_accepted';
+            const isPossible = prediction === 'possibly_accepted';
+            const isRejected = prediction === 'likely_rejected';
+
+            const verdictConfig = isAccepted
+              ? { text: 'Your claim is likely to be accepted', icon: '✓', color: 'emerald', bgGrad: 'from-emerald-500/10 to-emerald-500/5', borderColor: 'border-emerald-500/25' }
+              : isPossible
+                ? { text: 'Your claim may be accepted', icon: '?', color: 'amber', bgGrad: 'from-amber-500/10 to-amber-500/5', borderColor: 'border-amber-500/25' }
+                : isRejected
+                  ? { text: 'Your claim is unlikely to be accepted', icon: '✗', color: 'rose', bgGrad: 'from-rose-500/10 to-rose-500/5', borderColor: 'border-rose-500/25' }
+                  : { text: 'More information is needed', icon: '!', color: 'blue', bgGrad: 'from-blue-500/10 to-blue-500/5', borderColor: 'border-blue-500/25' };
+
+            const confidencePct = claim.ai_risk_score !== null 
+              ? Math.round((1 - claim.ai_risk_score) * 100) 
+              : 50;
+            
+            return (
+              <section className={`relative overflow-hidden rounded-2xl border ${verdictConfig.borderColor} bg-gradient-to-br ${verdictConfig.bgGrad} p-5 shadow-lg shadow-black/25 space-y-4 animate-in fade-in duration-500`}>
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/[0.02] rounded-full blur-xl pointer-events-none" />
+                
+                {/* Verdict Header */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-2xl bg-${verdictConfig.color}-500/15 border border-${verdictConfig.color}-500/25 flex items-center justify-center text-${verdictConfig.color}-400 text-lg font-black shrink-0`}>
+                    {verdictConfig.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-white">AI Claim Prediction</h3>
+                    <p className={`text-xs font-bold text-${verdictConfig.color}-400 mt-0.5`}>
+                      {verdictConfig.text}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Confidence Meter */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    <span>Acceptance Likelihood</span>
+                    <span className="text-white">{confidencePct}%</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${
+                        isAccepted ? 'bg-emerald-500' : isPossible ? 'bg-amber-500' : isRejected ? 'bg-rose-500' : 'bg-blue-500'
+                      }`} 
+                      style={{ width: `${confidencePct}%` }} 
+                    />
+                  </div>
+                </div>
+
+                {/* Customer Explanation */}
+                {explanation && (
+                  <div className="p-3.5 bg-slate-950/50 border border-slate-800/60 rounded-xl text-xs leading-relaxed text-slate-300 font-normal">
+                    {explanation}
+                  </div>
+                )}
+
+                {/* Key Policy Clauses */}
+                {claim.ai_summary?.key_policy_clauses && claim.ai_summary.key_policy_clauses.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Relevant Policy Clauses</span>
+                    <ul className="space-y-1 pl-3 border-l border-slate-800">
+                      {claim.ai_summary.key_policy_clauses.slice(0, 4).map((clause, i) => (
+                        <li key={i} className="text-[11px] text-slate-400 flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5 shrink-0">·</span>
+                          {clause}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Disclaimer */}
+                <p className="text-[9px] text-slate-550 leading-relaxed border-t border-slate-800/40 pt-3">
+                  ⓘ This is an AI-assisted prediction and does not represent a final decision. Your insurer will review your claim and provide an official response.
+                </p>
+              </section>
+            );
+          })() : claim.status !== 'draft' && (
+            <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex items-center gap-3 animate-pulse">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                <Cpu className="w-4 h-4 text-blue-400 animate-spin" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">AI is analyzing your claim...</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Our AI co-pilot is reviewing your policy, description, and images to predict the outcome.</p>
               </div>
             </section>
           )}

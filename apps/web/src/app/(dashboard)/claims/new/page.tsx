@@ -10,9 +10,12 @@ import {
   ChevronRight, 
   ChevronLeft,
   FilePlus,
-  Loader2
+  Loader2,
+  CheckCircle,
+  ArrowRight,
+  Cpu
 } from 'lucide-react';
-import { getPolicies, createClaim, uploadClaimImages, submitClaim } from '@/lib/api-client';
+import { getPolicies, createClaim, uploadClaimImages, submitClaim, getClaim } from '@/lib/api-client';
 import { useAppStore } from '@/lib/store';
 import { ImageUploader, UploadingFile } from '@/components/image-uploader';
 
@@ -31,6 +34,10 @@ export default function NewClaimPage() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState('');
+  const [submittedClaimId, setSubmittedClaimId] = useState<string | null>(null);
+  const [submittedClaimNumber, setSubmittedClaimNumber] = useState<string>('');
+  const [aiPrediction, setAiPrediction] = useState<string | null>(null);
+  const [aiExplanation, setAiExplanation] = useState<string>('');
 
   // Form State
   const [formData, setFormData] = useState<ClaimFormState>({
@@ -182,7 +189,24 @@ export default function NewClaimPage() {
 
       showToast("Claim submitted successfully!", "success");
       setSubmitting(false);
-      router.push(`/claims/${claimId}`);
+      setSubmittedClaimId(claimId);
+      setSubmittedClaimNumber(claimRes.claim_number || claimId);
+      setStep(5);
+
+      // Poll for AI prediction for up to 8 seconds
+      let attempts = 0;
+      const pollInterval = setInterval(async () => {
+        attempts++;
+        try {
+          const claimDetail = await getClaim(claimId);
+          if (claimDetail.ai_customer_prediction) {
+            setAiPrediction(claimDetail.ai_customer_prediction);
+            setAiExplanation(claimDetail.ai_customer_explanation || '');
+            clearInterval(pollInterval);
+          }
+        } catch { /* ignore poll errors */ }
+        if (attempts >= 4) clearInterval(pollInterval);
+      }, 2000);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -208,6 +232,7 @@ export default function NewClaimPage() {
       </div>
 
       {/* Steps Indicator Progress Stepper */}
+      {step <= 4 && (
       <section className="relative flex justify-between items-center w-full px-1 py-2 shrink-0">
         <div className="absolute top-5 left-0 right-0 h-0.5 bg-slate-900 z-0" />
         <div 
@@ -237,6 +262,7 @@ export default function NewClaimPage() {
           </div>
         ))}
       </section>
+      )}
 
       {/* Main Container Wizard */}
       <div className="backdrop-blur-md bg-slate-900/60 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/25">
@@ -499,6 +525,92 @@ export default function NewClaimPage() {
           </div>
         )}
 
+        {/* Step 5: Success Screen */}
+        {step === 5 && (
+          <div className="space-y-6 animate-in fade-in duration-300 text-center py-6">
+            {/* Success Icon */}
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center animate-in zoom-in-75 duration-500">
+                <CheckCircle className="w-8 h-8 text-emerald-400" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-extrabold text-lg text-white">Claim Submitted Successfully!</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                Your claim has been submitted for AI-powered triage assessment. You&apos;ll receive a prediction shortly.
+              </p>
+            </div>
+
+            {/* Claim Number */}
+            <div className="bg-slate-950/50 border border-slate-850 rounded-xl p-4 inline-block">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 block">Claim Reference</span>
+              <span className="text-lg font-black text-white font-mono mt-1 block">{submittedClaimNumber}</span>
+            </div>
+
+            {/* AI Prediction (if available) */}
+            {aiPrediction ? (
+              <div className={`mx-auto max-w-sm rounded-xl border p-4 space-y-2 animate-in slide-in-from-bottom duration-300 ${
+                aiPrediction === 'likely_accepted' 
+                  ? 'border-emerald-500/25 bg-emerald-500/5' 
+                  : aiPrediction === 'possibly_accepted'
+                    ? 'border-amber-500/25 bg-amber-500/5'
+                    : 'border-rose-500/25 bg-rose-500/5'
+              }`}>
+                <div className="flex items-center justify-center gap-2">
+                  <Cpu className="w-4 h-4 text-blue-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">AI Prediction</span>
+                </div>
+                <p className={`text-sm font-bold ${
+                  aiPrediction === 'likely_accepted' ? 'text-emerald-400' 
+                    : aiPrediction === 'possibly_accepted' ? 'text-amber-400' 
+                    : 'text-rose-400'
+                }`}>
+                  {aiPrediction === 'likely_accepted' ? 'Your claim is likely to be accepted' 
+                    : aiPrediction === 'possibly_accepted' ? 'Your claim may be accepted'
+                    : 'Your claim is unlikely to be accepted'}
+                </p>
+                {aiExplanation && (
+                  <p className="text-[10px] text-slate-400 leading-relaxed">{aiExplanation}</p>
+                )}
+                <p className="text-[8px] text-slate-550 pt-1 border-t border-slate-800/40">
+                  ⓘ This is an AI-assisted prediction, not a final decision.
+                </p>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-sm rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex items-center justify-center gap-2 animate-pulse">
+                <Cpu className="w-4 h-4 text-blue-400 animate-spin" />
+                <span className="text-xs text-slate-400">AI is analyzing your claim...</span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <button
+                onClick={() => router.push(`/claims/${submittedClaimId}`)}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#1B4FD8] hover:bg-[#1B4FD8]/90 text-white rounded-xl text-xs font-bold shadow-lg shadow-[#1B4FD8]/20 transition-colors cursor-pointer"
+              >
+                <span>View Full Claim Detail</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setStep(1);
+                  setFormData({ policy_id: '', incident_date: new Date().toISOString().split('T')[0], incident_location: '', claim_type: 'own_damage', incident_description: '' });
+                  setLocalImages([]);
+                  setSubmittedClaimId(null);
+                  setAiPrediction(null);
+                  setAiExplanation('');
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 border border-slate-800 hover:border-slate-700 bg-transparent text-slate-350 hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <FilePlus className="w-4 h-4" />
+                <span>File Another Claim</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Global Loading submitting overlay */}
         {submitting && (
           <div className="absolute inset-0 z-30 bg-slate-950/85 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center p-6 gap-3.5 text-center">
@@ -511,7 +623,7 @@ export default function NewClaimPage() {
         )}
 
         {/* Form controls navigation footer */}
-        {!submitting && (
+        {!submitting && step !== 5 && (
           <div className="flex justify-between gap-4 mt-6 pt-5 border-t border-slate-800/80">
             {step > 1 ? (
               <button
