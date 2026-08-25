@@ -146,8 +146,8 @@ coverai/
 ├── docker-compose.yml                # Multi-service Docker stack
 ├── Makefile                          # Developer workflow commands
 ├── turbo.json                        # Turborepo pipeline config
-├── RETENTION_POLICY.md               # DPDP data retention documentation
-└── playwright.config.js              # E2E test configuration
+├── playwright.config.js              # E2E test configuration
+└── docs/                             # System, compliance & planning docs
 ```
 
 ---

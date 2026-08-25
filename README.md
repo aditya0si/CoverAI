@@ -187,4 +187,4 @@ GitHub Actions workflow runs on PRs and main branch pushes:
 - Frontend: `https://your-app.vercel.app`
 
 ### Troubleshooting
-See [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md) for local development.
+See [EXECUTION_GUIDE.md](./docs/EXECUTION_GUIDE.md) for local development.

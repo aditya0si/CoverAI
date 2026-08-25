@@ -104,3 +104,27 @@ CoverAI implements a strict, structured request middleware pipeline ensuring 100
 
 - **Structured Logs**: The middleware automatically writes to system `stdout` in pure JSON format containing `timestamp`, `level`, `request_id`, `user_id`, `method`, `path`, `status_code`, and `duration_ms` for every single request.
 - **Prometheus Telemetry**: Exposes standard request counts and latencies on `/metrics`. Overrides `/metrics` scraping with a custom handler that dynamically queries the database for unresolved claim counts, keeping the `active_claims_gauge` metric highly accurate.
+
+## 0. System Architecture Diagram
+
+```mermaid
+flowchart LR
+    B[Browser / User] --> W
+    subgraph Frontend[Next.js 14 Web App]
+        W[App Router Pages<br/>Customer / Advisor / Insurer + middleware.ts guards]
+    end
+    W --> R
+    subgraph Backend[FastAPI Service - Python 3.11]
+        R[Routers - HTTP seam] --> S[Services - business logic:<br/>ClaimService / VisibilityFilter / QA]
+        E[Embedding + PDF services]
+    end
+    S --> PG
+    S --> RD
+    E --> PG
+    S --> AI[OpenAI API]
+    S --> ST[Object Storage]
+    subgraph Data
+        PG[(PostgreSQL + pgvector)]
+        RD[(Redis - rate limit / cache)]
+    end
+```
