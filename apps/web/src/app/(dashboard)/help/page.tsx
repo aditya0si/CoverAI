@@ -38,11 +38,11 @@ export default function HelpPage() {
       
       {/* Header Block */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+        <h1 className="text-xl sm:text-2xl font-black text-[#191919] tracking-tight flex items-center gap-2.5">
           <HelpCircle className="w-6 h-6 text-[#1B4FD8]" />
           <span>Support Co-Pilot & Help Centre</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-[#6E6862] mt-1">
           Learn about automatic claims parsing, AI assessment indices, and co-pilot guidelines.
         </p>
       </div>
@@ -53,7 +53,7 @@ export default function HelpPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-4.5 h-4.5 text-blue-400" />
-            <h2 className="font-extrabold text-sm uppercase tracking-widest text-slate-400">Frequently Asked Questions</h2>
+            <h2 className="font-extrabold text-sm uppercase tracking-widest text-[#6E6862]">Frequently Asked Questions</h2>
           </div>
 
           <div className="space-y-3.5">
@@ -73,7 +73,7 @@ export default function HelpPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <MessageSquare className="w-4.5 h-4.5 text-[#16A34A]" />
-            <h2 className="font-extrabold text-sm uppercase tracking-widest text-slate-400">Support Contacts</h2>
+            <h2 className="font-extrabold text-sm uppercase tracking-widest text-[#6E6862]">Support Contacts</h2>
           </div>
 
           <div className="backdrop-blur-md bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
