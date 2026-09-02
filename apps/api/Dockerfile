@@ -19,7 +19,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Install dependencies with pip (more reliable on Railway than Poetry)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir fastapi uvicorn sqlalchemy alembic asyncpg pydantic-settings pydantic python-multipart passlib bcrypt pyjwt redis slowapi prometheus-fastapi-instrumentator apscheduler cryptography python-json-logger httpx google-generativeai pymupdf
+    pip install --no-cache-dir fastapi uvicorn sqlalchemy alembic asyncpg pydantic-settings pydantic python-multipart bcrypt pyjwt redis slowapi prometheus-fastapi-instrumentator apscheduler cryptography python-json-logger httpx google-generativeai pymupdf
 
 # ==========================================
 # Stage 2: Final Runner
