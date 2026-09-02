@@ -31,6 +31,7 @@ eggs/
 lib/
 lib64/
 parts/
+!apps/web/src/lib/
 sdist/
 var/
 wheels/
