@@ -96,6 +96,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
 
       onSuccess();
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setUploading(false);
       setProgress(0);
