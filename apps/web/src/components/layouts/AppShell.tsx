@@ -32,7 +32,7 @@ export function AppShell({
   brandIcon: BrandIcon,
 }: AppShellProps) {
   const pathname = usePathname();
-  const { user, sidebarOpen, setSidebarOpen, toggleSidebar, syncUser, toast } = useAppStore();
+  const { user, sidebarOpen, setSidebarOpen, toggleSidebar, syncUser } = useAppStore();
 
   useEffect(() => {
     syncUser();
@@ -43,24 +43,6 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#191919] flex flex-col md:flex-row relative selection:bg-[#191919] selection:text-[#FAF8F5]">
-      {/* Toast Notification Container */}
-      {toast.message && (
-        <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div
-            className={cn(
-              'px-4 py-3 rounded-xl border text-xs font-medium shadow-md flex items-center gap-2 max-w-md',
-              toast.type === 'error'
-                ? 'bg-[#FDF2F0] border-[#F2C0B7] text-[#B83A26]'
-                : toast.type === 'info'
-                ? 'bg-[#F0F5FD] border-[#B7D2F2] text-[#205295]'
-                : 'bg-[#F1F8F1] border-[#C2E4C2] text-[#2E7D32]'
-            )}
-          >
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* Mobile Top Navigation Header */}
       <header className="md:hidden sticky top-0 z-40 w-full h-16 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E2DDD4] px-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -74,6 +56,8 @@ export function AppShell({
         </div>
         <button
           onClick={toggleSidebar}
+          aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={sidebarOpen}
           className="p-2 text-[#6E6862] hover:text-[#191919] transition-colors rounded-lg hover:bg-[#F1EDE4]"
         >
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -104,6 +88,7 @@ export function AppShell({
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close navigation menu"
             className="md:hidden p-1.5 text-[#6E6862] hover:text-[#191919] rounded-lg hover:bg-[#F1EDE4]"
           >
             <X className="w-4 h-4" />

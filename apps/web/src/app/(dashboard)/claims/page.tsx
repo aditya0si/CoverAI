@@ -86,7 +86,11 @@ export default function ClaimsPage() {
         <EmptyState
           icon={FileQuestion}
           title="No claims matching this category"
-          description={`There are currently no claims with status '${activeTab.replace('_', ' ')}'.`}
+          description={
+            activeTab === 'all'
+              ? "You haven't filed any claims yet. File a claim to start tracking AI triage, review, and settlement here."
+              : `There are currently no claims with status '${activeTab.replace('_', ' ')}'.`
+          }
           action={
             activeTab === 'all'
               ? {
