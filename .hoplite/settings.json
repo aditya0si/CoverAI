@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "ports": {"preview": 3000, "additional": {}},
+  "scripts": {
+    "setup": {
+      "enabled": true,
+      "command": "cd apps/api && uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python pytest pytest-asyncio pymupdf python-multipart slowapi apscheduler python-json-logger openai prometheus-fastapi-instrumentator uvicorn passlib fastapi 'sqlalchemy[asyncio]' pydantic pydantic-settings python-dotenv pyjwt bcrypt redis cryptography prometheus-client pgvector numpy google-generativeai asyncpg && cd ../.. && pnpm install"
+    },
+    "run": {"enabled": true, "command": null},
+    "archive": {"enabled": true, "command": null},
+    "check": {"enabled": true, "command": null}
+  },
+  "mcpServers": []
+}

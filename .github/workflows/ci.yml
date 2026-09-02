@@ -12,15 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-
-      - name: Setup pnpm
-        run: corepack enable && corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
         run: pnpm install
@@ -39,9 +41,10 @@ jobs:
       - name: Install Python dependencies
         run: |
           cd apps/api
-          pip install -e ".[dev]" || pip install pytest pytest-asyncio httpx
+          pip install --upgrade pip
+          pip install fastapi uvicorn "sqlalchemy[asyncio]" alembic asyncpg pydantic-settings pydantic python-multipart passlib bcrypt pyjwt redis slowapi prometheus-fastapi-instrumentator apscheduler cryptography python-json-logger httpx google-generativeai pymupdf pgvector numpy python-dotenv pytest pytest-asyncio
 
       - name: Run backend tests
         run: |
           cd apps/api
-          pytest tests/ -v --tb=short || echo "No tests yet"
+          pytest tests/ -v --tb=short

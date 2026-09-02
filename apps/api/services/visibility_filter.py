@@ -1,7 +1,7 @@
 """VisibilityFilter — role-based claim visibility as a standalone deep module.
 
-Extracted from the visibility logic previously embedded in ClaimService.  Consumed by both the
-claims router and advisor router so that role-based access logic has a single
+Extracted from the visibility logic previously embedded in ClaimService.  Consumed by
+the claims router and advisor router so that role-based access logic has a single
 home and can be tested independently.
 """
 from __future__ import annotations
@@ -11,6 +11,16 @@ from typing import Any
 from sqlalchemy import select
 
 import models
+
+
+def _role_value(user: models.User) -> str:
+    """Normalize ``user.role`` to its string value.
+
+    The ORM loads the role as a ``UserRole`` enum, whose ``str()`` is
+    ``"UserRole.advisor"`` rather than ``"advisor"`` — comparing the enum
+    directly would silently skip every role branch.
+    """
+    return getattr(user.role, "value", user.role)
 
 
 class VisibilityFilter:
@@ -26,18 +36,22 @@ class VisibilityFilter:
     # ── public static API ─────────────────────────────────────────────────────
 
     @staticmethod
-    def apply(db: Any, user: models.User, query: Any) -> Any:
+    async def apply(db: Any, user: models.User, query: Any) -> Any:
         """Return ``query`` with a role-appropriate WHERE clause appended.
 
         Admin role receives no filter (sees everything).  All other roles are
-        scoped to their permitted subset of claims.
+        scoped to their permitted subset of claims.  ``user.role`` may arrive
+        either as a ``UserRole`` enum (ORM shape) or as a plain string.
         """
-        role = str(user.role)
+        role = _role_value(user)
 
         if role == "admin":
             return query
 
-        if role in ("insurer_officer", "departmental_head"):
+        if role in ("insurer_officer", "departmental_head", "aggregator"):
+            # Department-level scoping was the original intent for these roles,
+            # but no department columns ever landed in the schema, so claims
+            # are scoped to the assigned officer instead.
             return query.where(models.Claim.assigned_officer_id == user.id)
 
         if role == "advisor":
@@ -49,14 +63,9 @@ class VisibilityFilter:
                     models.AdvisorAssignment.is_active.is_(True),
                 )
             )
-            result = db.execute(sub)
+            result = await db.execute(sub)
             assigned_ids = result.scalars().all()
             return query.where(models.Claim.claimant_id.in_(assigned_ids))
-
-        if role == models.UserRole.aggregator:
-            return query.where(
-                models.Claim.assigned_department_id == user.department_id
-            )
 
         # default: customer and any other role → own claims only
         return query.where(models.Claim.claimant_id == user.id)
@@ -68,19 +77,16 @@ class VisibilityFilter:
         The dict maps column names to values so callers can reconstruct the
         WHERE clause without needing a live DB session.
         """
-        role = str(user.role)
+        role = _role_value(user)
 
         if role == "admin":
             return None
 
-        if role in ("insurer_officer", "departmental_head"):
+        if role in ("insurer_officer", "departmental_head", "aggregator"):
             return {"assigned_officer_id": user.id}
 
         if role == "advisor":
             return {"advisor_id": user.id}  # resolved via join at query time
-
-        if role == "aggregator":
-            return {"assigned_department_id": user.department_id}
 
         # default: customer / any other role
         return {"claimant_id": user.id}
