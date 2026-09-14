@@ -9,15 +9,19 @@ import { ClaimCard } from '@/components/claim-card';
 import { ClaimStatus } from '@coverai/shared-types';
 import { cn } from '@coverai/ui';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { OfflineNotice, LoadingRows } from '@/components/api-status';
 
 export default function ClaimsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | ClaimStatus>('all');
 
-  const { data: claims = [], isLoading } = useQuery({
+  const { data: claims = [], isLoading, isError } = useQuery({
     queryKey: ['claims', activeTab],
     queryFn: () => getClaims(activeTab === 'all' ? undefined : activeTab),
+    retry: 1,
   });
+
+  const isOffline = !process.env.NEXT_PUBLIC_API_URL || isError;
 
   const tabs: { id: 'all' | ClaimStatus; label: string }[] = [
     { id: 'all', label: 'All Claims' },
@@ -73,15 +77,10 @@ export default function ClaimsPage() {
       </section>
 
       {/* Claims Listing Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-32 bg-[#F1EDE4] border border-[#E2DDD4] rounded-2xl animate-pulse"
-            />
-          ))}
-        </div>
+      {isOffline ? (
+        <OfflineNotice />
+      ) : isLoading ? (
+        <LoadingRows n={4} />
       ) : claims.length === 0 ? (
         <EmptyState
           icon={FileQuestion}

@@ -7,14 +7,18 @@ import { getPolicies } from '@/lib/api-client';
 import { PolicyCard } from '@/components/policy-card';
 import { UploadModal } from './upload-modal';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { OfflineNotice, LoadingRows } from '@/components/api-status';
 
 export default function PoliciesPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
 
-  const { data: policies = [], isLoading, refetch } = useQuery({
+  const { data: policies = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['policies'],
     queryFn: () => getPolicies(),
+    retry: 1,
   });
+
+  const isOffline = !process.env.NEXT_PUBLIC_API_URL || isError;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -41,15 +45,10 @@ export default function PoliciesPage() {
       </div>
 
       {/* Main Grid Panel */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-44 bg-[#F1EDE4] border border-[#E2DDD4] rounded-2xl animate-pulse p-5"
-            />
-          ))}
-        </div>
+      {isOffline ? (
+        <OfflineNotice />
+      ) : isLoading ? (
+        <LoadingRows n={3} />
       ) : policies.length === 0 ? (
         <EmptyState
           icon={FileText}
