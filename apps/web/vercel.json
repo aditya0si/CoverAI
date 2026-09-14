@@ -1,7 +1,1 @@
-{
-  "buildCommand": "pnpm install && pnpm run build",
-  "outputDirectory": ".next",
-  "installCommand": "pnpm install",
-  "framework": "nextjs",
-  "regions": ["iad1"]
-}
+{"framework":"nextjs","regions":["iad1"]}

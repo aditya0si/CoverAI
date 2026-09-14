@@ -1,0 +1,67 @@
+# Render Blueprint — CoverAI API + Postgres (pgvector) + Key Value (Redis).
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Deploy: Render Dashboard → New → Blueprint → pick this repository → Apply.
+# Two values are asked for at that moment (marked sync: false below):
+#   FIELD_ENCRYPTION_KEY  a Fernet key (44 chars, generated for you in render-secrets.txt)
+#   GEMINI_API_KEY        a Google AI Studio API key (free tier) for the AI features
+#
+# Notes that matter on the free instance type (512 MB RAM / 0.1 CPU):
+#   * The service spins down after 15 minutes idle and cold-starts in about a minute.
+#   * The free Postgres database expires 30 days after creation (Render's rule, not ours).
+#   * The Key Value instance has no disk persistence: rate-limit counters reset on restart,
+#     which is fine for this application.
+
+databases:
+  - name: coverai-db
+    databaseName: coverai
+    user: coverai
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"
+
+services:
+  - type: keyvalue
+    name: coverai-redis
+    plan: free
+    region: singapore
+    ipAllowList: []          # internal only: reachable from services in this workspace
+    maxmemoryPolicy: noeviction
+
+  - type: web
+    name: coverai-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    healthCheckPath: /health
+    # Run the Alembic migrations (they create the pgvector extension and all tables,
+    # and are idempotent) before serving traffic on Render's port.
+    dockerCommand: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coverai-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: coverai-redis
+          type: keyvalue
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STORAGE_BACKEND
+        value: local
+      - key: STORAGE_BUCKET
+        value: coverai-uploads
+      - key: ALLOWED_ORIGINS
+        value: https://cover-ai-web-adityasinghprojects.vercel.app
