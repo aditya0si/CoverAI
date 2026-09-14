@@ -136,8 +136,15 @@ GEMINI_API_KEY=your_key
 JWT_SECRET=generate_with_openssl_rand_hex_32
 ALLOWED_ORIGINS=https://your-app.vercel.app
 STORAGE_BUCKET=coverai-documents-bucket
-FIELD_ENCRYPTION_KEY=generate_with_fernet
+FIELD_ENCRYPTION_KEY=REQUIRED
 ```
+
+> **`FIELD_ENCRYPTION_KEY` is REQUIRED — no default is shipped.** The backend
+> refuses to start (and document encryption raises) if it is missing or is not a
+> valid Fernet key. Generate one with:
+> ```bash
+> python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+> ```
 
 #### Vercel (Frontend)
 Set in Vercel dashboard → Environment Variables:
@@ -177,10 +184,26 @@ python scripts/seed_dev.py
 Update Railway `ALLOWED_ORIGINS` to include your Vercel URL.
 
 ### CI/CD
-GitHub Actions workflow runs on PRs and main branch pushes:
-- Lint + type check frontend
-- Run backend tests
-- Auto-deploy to Railway/Vercel on main
+`.github/workflows/ci.yml` runs on pull requests and pushes to `main`. The workflow
+requests read-only `contents` permission and cancels superseded runs on the same
+ref. It defines two jobs, and every step fails the job on error (no fallbacks):
+
+**API job** — `apps/api`, Python 3.12, Poetry 2.2.1, 20-minute timeout:
+- `poetry check --lock` — verifies `pyproject.toml` and `poetry.lock` are in sync
+- `poetry install --no-root --no-interaction` — installs locked dependencies
+- `poetry run pytest -q` — test suite
+- `poetry run ruff check .` — Python lint
+- `poetry run python -m pip_audit` — dependency vulnerability audit
+
+**Web job** — pnpm 9.1.4, Node 20, 15-minute timeout:
+- `pnpm install --frozen-lockfile` — installs from the committed lockfile
+- `pnpm --filter web lint`
+- `pnpm --filter web exec tsc --noEmit`
+- `pnpm --filter web build`
+- `pnpm audit --audit-level=high` — fails on any high or critical advisory
+
+This repository contains no automatic deployment step; deployment is performed
+manually following the steps below.
 
 ### Health Checks
 - Backend: `https://your-backend.railway.app/health`
