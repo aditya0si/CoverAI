@@ -96,13 +96,13 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
 
       onSuccess();
       onClose();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       setUploading(false);
       setProgress(0);
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
       const errMsg =
-        err.response?.data?.detail ||
-        err.response?.data?.message ||
+        e.response?.data?.detail ||
+        e.response?.data?.message ||
         'Failed to upload policy. Please verify connection and try again.';
       setError(errMsg);
     }

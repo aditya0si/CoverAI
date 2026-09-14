@@ -400,7 +400,7 @@ class ClaimService:
         """
         from services.visibility_filter import VisibilityFilter  # local to avoid circular
 
-        query = VisibilityFilter.apply(self.db, self.user, select(Claim))
+        query = await VisibilityFilter.apply(self.db, self.user, select(Claim))
 
         filters: list[Any] = []
 
