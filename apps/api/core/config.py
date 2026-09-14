@@ -55,4 +55,21 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """Accept the plain postgres/``postgresql://`` URL that managed hosts inject.
+
+        Render, Railway and Heroku hand out a psycopg2-style URL, and
+        ``create_async_engine`` refuses it because its dialect has no async driver.
+        Rewriting the scheme here means the app *and* Alembic (which reads the same
+        setting) both get a URL that works, instead of failing at first connect.
+        """
+        if isinstance(v, str):
+            if v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+asyncpg://", 1)
+            if v.startswith("postgresql://"):
+                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
+
 settings = Settings()
