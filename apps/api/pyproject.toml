@@ -8,30 +8,37 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11 || ^3.12 || ^3.13 || ^3.14"
-fastapi = "^0.110.0"
+fastapi = "^0.141.1"
 uvicorn = {extras = ["standard"], version = "^0.28.0"}
 pymupdf = "^1.24.0"
-openai = "^1.14.0"
 google-generativeai = "^0.8.0"
-python-dotenv = "^1.0.1"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.28"}
 alembic = "^1.13.1"
-psycopg2-binary = "^2.9.9"
 asyncpg = "^0.29.0"
-pydantic-settings = "^2.2.1"
+pydantic-settings = ">=2.14.2"
 pydantic = "^2.6.4"
-python-multipart = "^0.0.9"
-passlib = "^1.7.4"
+python-multipart = ">=0.0.31"
 bcrypt = "^5.0.0"
 pyjwt = "^2.13.0"
 redis = "^7.4.0"
 slowapi = "^0.1.9"
-prometheus-fastapi-instrumentator = "^7.0.0"
+prometheus-fastapi-instrumentator = "^8.0.0"
 apscheduler = "^3.10.4"
-cryptography = "^42.0.5"
+cryptography = ">=49.0.0"
 python-json-logger = "^2.0.7"
 httpx = "^0.27.0"
 pgvector = "^0.2.1"
+# Security floor for httplib2 pulled transitively via google-generativeai -> google-auth-httplib2.
+httplib2 = ">=0.32.0"
+# Security floor for pyasn1 pulled transitively via google-auth -> rsa.
+pyasn1 = ">=0.6.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.1.1"
+pytest-asyncio = "^1.4.0"
+ruff = "^0.16.7"
+pip-audit = "^2.10.1"
+httpx = "^0.27.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -41,3 +48,17 @@ build-backend = "poetry.core.masonry.api"
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# SQLAlchemy resolves these string forward references via its registry.
+"models/*.py" = ["F821"]
+"alembic/versions/*.py" = ["F821"]
+# Keep re-exports in package __init__ files.
+"__init__.py" = ["F401"]

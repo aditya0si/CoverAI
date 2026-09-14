@@ -1,12 +1,16 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 
 from core.config import settings
-from core.scheduler import init_scheduler
+from core.scheduler import init_scheduler, scheduler
 from core.limiter import limiter
 from core.middleware import SecurityAndRequestIdMiddleware
 from core.logging_config import setup_logging
@@ -14,14 +18,14 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 # Set up structured JSON logging
 setup_logging()
-from core.exceptions import (
+from core.exceptions import (  # noqa: E402
     CoverAIException,
     coverai_exception_handler,
     validation_exception_handler,
     http_exception_handler,
     generic_exception_handler,
 )
-from routers import (
+from routers import (  # noqa: E402
     users_router,
     vehicles_router,
     policies_router,
@@ -34,9 +38,23 @@ from routers import (
     evals_router,
 )
 
+logger = logging.getLogger("uvicorn.error")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start the retention scheduler on boot and shut it down on exit."""
+    init_scheduler()
+    try:
+        yield
+    finally:
+        scheduler.shutdown(wait=False)
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
 )
 
 # Connect slowapi rate limiter
@@ -102,8 +120,8 @@ async def metrics():
             )
             count = (await db.execute(stmt)).scalar() or 0
             active_claims_gauge.set(count)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to refresh active claims gauge: %s", exc)
             
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
@@ -120,24 +138,22 @@ async def health_check():
     try:
         async with SessionLocal() as db:
             await db.execute(text("SELECT 1"))
-    except Exception as e:
+    except Exception:
         db_status = "error"
         
     redis_status = "ok"
     try:
         await redis_client.ping()
-    except Exception as e:
+    except Exception:
         redis_status = "error"
-        
-    overall_status = "ok" if (db_status == "ok" and redis_status == "ok") else "error"
-    
-    return {
-        "status": overall_status,
-        "db": db_status,
-        "redis": redis_status,
-        "version": "1.0.0"
-    }
 
-@app.on_event("startup")
-async def startup_event():
-    init_scheduler()
+    healthy = db_status == "ok" and redis_status == "ok"
+    return JSONResponse(
+        status_code=200 if healthy else 503,
+        content={
+            "status": "ok" if healthy else "error",
+            "db": db_status,
+            "redis": redis_status,
+            "version": "1.0.0",
+        },
+    )

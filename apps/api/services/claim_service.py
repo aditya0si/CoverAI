@@ -12,7 +12,7 @@ from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
@@ -21,10 +21,7 @@ from models.claims import (
        ClaimStatus,
        ClaimType,
 )
-from models.claim_images import ClaimImage
 from schemas.claim import ClaimDetailResponse
-from services.triage_service import run_ai_triage, run_image_ai_analysis
-from services.auth_service import decode_token
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -469,7 +466,6 @@ class ClaimService:
                 error_code="TOO_MANY_FILES",
             )
 
-        allowed_types = {"image/jpeg", "image/png", "image/webp"}
         max_size = 10 * 1024 * 1024  # 10 MB
         storage = self.storage or self._get_storage()
         ext_map = {".jpg": "jpg", ".jpeg": "jpg", ".png": "png", ".webp": "webp"}

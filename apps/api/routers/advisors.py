@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import List
 from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -53,7 +52,7 @@ async def create_assignment(
     stmt = select(models.AdvisorAssignment).where(
         models.AdvisorAssignment.advisor_id == advisor.id,
         models.AdvisorAssignment.customer_id == current_user.id,
-        models.AdvisorAssignment.is_active == True
+        models.AdvisorAssignment.is_active.is_(True)
     )
     existing = (await db.execute(stmt)).scalar_one_or_none()
     
@@ -107,7 +106,7 @@ async def get_my_advisors(
     """
     stmt = select(models.AdvisorAssignment).where(
         models.AdvisorAssignment.customer_id == current_user.id,
-        models.AdvisorAssignment.is_active == True
+        models.AdvisorAssignment.is_active.is_(True)
     )
     result = await db.execute(stmt)
     assignments = result.scalars().all()
@@ -184,12 +183,12 @@ async def get_my_customers(
     """
     Allows a logged in advisor to fetch all customers actively assigned to them.
     """
+    # Active assignments query (retained; the join below is authoritative).
     stmt = select(models.AdvisorAssignment).where(
         models.AdvisorAssignment.advisor_id == current_user.id,
-        models.AdvisorAssignment.is_active == True
+        models.AdvisorAssignment.is_active.is_(True)
     )
-    result = await db.execute(stmt)
-    assignments = result.scalars().all()
+    _assignments = (await db.execute(stmt)).scalars().all()
 
     # Single join - user + policy + claim count in one query (no N+1)
     open_statuses = [
@@ -224,7 +223,7 @@ async def get_my_customers(
         )
         .where(
             models.AdvisorAssignment.advisor_id == current_user.id,
-            models.AdvisorAssignment.is_active == True,
+            models.AdvisorAssignment.is_active.is_(True),
         )
         .group_by(models.User.id, models.AdvisorAssignment.granted_at)
     )
@@ -251,7 +250,7 @@ async def _verify_advisor_customer(advisor_id: uuid.UUID, customer_id: uuid.UUID
     stmt = select(models.AdvisorAssignment).where(
         models.AdvisorAssignment.advisor_id == advisor_id,
         models.AdvisorAssignment.customer_id == customer_id,
-        models.AdvisorAssignment.is_active == True,
+        models.AdvisorAssignment.is_active.is_(True),
     )
     assignment = (await db.execute(stmt)).scalar_one_or_none()
     if not assignment:

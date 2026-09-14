@@ -1,5 +1,42 @@
+import importlib
+
 import pytest
+from pydantic import ValidationError
+
+import core.encryption
+from core.config import Settings
 from core.encryption import encrypt, decrypt, hash_phone
+
+
+def test_configured_key_encrypt_decrypt_roundtrip():
+    """With the configured (valid) key, a round trip must return the original."""
+    plaintext = "DL-01-AB-1234"
+    encrypted = encrypt(plaintext)
+    assert encrypted != plaintext
+    assert decrypt(encrypted) == plaintext
+
+
+def test_missing_field_encryption_key_fails_loudly(monkeypatch):
+    """A missing FIELD_ENCRYPTION_KEY must be a hard validation error, not a default."""
+    monkeypatch.delenv("FIELD_ENCRYPTION_KEY", raising=False)
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert "FIELD_ENCRYPTION_KEY" in str(exc_info.value)
+
+
+def test_invalid_field_encryption_key_raises(monkeypatch):
+    """core.encryption must raise instead of silently generating a temp key."""
+    monkeypatch.setattr(
+        core.encryption.settings, "FIELD_ENCRYPTION_KEY", "not-a-valid-fernet-key"
+    )
+    try:
+        with pytest.raises(RuntimeError, match="FIELD_ENCRYPTION_KEY"):
+            importlib.reload(core.encryption)
+    finally:
+        # Restore the valid key and module for the rest of the suite.
+        monkeypatch.undo()
+        importlib.reload(core.encryption)
+
 
 def test_field_encryption_decryption():
     """

@@ -6,8 +6,7 @@ queries regardless of how many assignments exist.
 """
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
 

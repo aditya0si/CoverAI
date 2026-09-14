@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), ".."
 
 from core.config import settings
 from core.database import Base
-import models  # Import models to register tables on Base.metadata
+import models  # noqa: F401  # Import models to register tables on Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -1,16 +1,12 @@
-import uuid
-from datetime import date
 from typing import Any
-from fastapi import APIRouter, Depends, UploadFile, File, BackgroundTasks, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, BackgroundTasks
 
-from core.database import get_db
-from core.security import get_current_user, require_role, require_claim_access
-from core.storage import get_storage_backend
-from core.exceptions import CoverAIException, NotFoundException, ForbiddenException
-from services.claim_service import ClaimService
-import models
-import schemas
+from services.triage_service import (
+    notify_customer,
+    notify_insurer,
+    run_ai_triage,
+    run_image_ai_analysis,
+)
 
 claims_router = APIRouter(prefix="/claims", tags=["Claims"])
 

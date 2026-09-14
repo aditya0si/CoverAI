@@ -3,8 +3,6 @@ import json
 import logging
 import base64
 import time
-from typing import Dict, Any, List
-from sqlalchemy import select
 import google.generativeai as genai
 
 from core.config import settings

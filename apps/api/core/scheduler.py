@@ -7,7 +7,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from core.database import SessionLocal
 from core.storage import get_storage_backend
 from core.audit import log_action
-from core.encryption import encrypt
 import models
 
 logger = logging.getLogger("uvicorn.error")
@@ -26,7 +25,7 @@ async def run_data_minimization_expired_policies():
                 .where(
                     models.Policy.status == models.PolicyStatus.expired,
                     models.Policy.end_date < two_years_ago,
-                    models.Policy.extracted_text != None
+                    models.Policy.extracted_text.is_not(None)
                 )
                 .values(extracted_text=None)
             )

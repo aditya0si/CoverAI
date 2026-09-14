@@ -1,5 +1,4 @@
 import uuid
-from typing import List
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.security import require_role
 import models
-from services.eval_service import evaluate_rag_response, EvalResult
+from services.eval_service import evaluate_rag_response
 from services.qa_service import ask_policy_question
 
 evals_router = APIRouter(prefix="/evals", tags=["Evaluations"])

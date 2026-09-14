@@ -10,7 +10,7 @@ from sqlalchemy import select
 from core.database import get_db
 from core.security import get_current_user, require_role, require_policy_owner
 from core.storage import get_storage_backend
-from core.exceptions import NotFoundException, ForbiddenException, CoverAIException
+from core.exceptions import CoverAIException
 from core.audit import log_action
 from services.pdf_service import extract_text_from_pdf, parse_policy_metadata, PdfExtractionError
 from services.embedding_service import generate_and_store_embeddings

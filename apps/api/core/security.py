@@ -99,7 +99,7 @@ async def require_policy_owner(
         stmt = select(models.AdvisorAssignment).where(
             models.AdvisorAssignment.advisor_id == current_user.id,
             models.AdvisorAssignment.customer_id == policy.user_id,
-            models.AdvisorAssignment.is_active == True
+            models.AdvisorAssignment.is_active.is_(True)
         )
         assignment = (await db.execute(stmt)).scalar_one_or_none()
         if assignment:
@@ -134,7 +134,7 @@ async def require_claim_access(
         stmt = select(models.AdvisorAssignment).where(
             models.AdvisorAssignment.advisor_id == current_user.id,
             models.AdvisorAssignment.customer_id == claim.claimant_id,
-            models.AdvisorAssignment.is_active == True
+            models.AdvisorAssignment.is_active.is_(True)
         )
         assignment = (await db.execute(stmt)).scalar_one_or_none()
         if assignment:

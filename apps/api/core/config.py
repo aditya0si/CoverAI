@@ -34,8 +34,10 @@ class Settings(BaseSettings):
     # Google OAuth (optional — set to enable Google Sign-In)
     GOOGLE_CLIENT_ID: Optional[str] = None
     
-    # DPDP Field encryption
-    FIELD_ENCRYPTION_KEY: str = "T-Bf6tYh6Xw46U_ZtZ-0X1UjWvTjQk-mUf0Vw1Z4X4o="
+    # DPDP Field encryption — required, must be a valid Fernet key.
+    # Missing values fail loudly at import time rather than silently using a
+    # public development key.
+    FIELD_ENCRYPTION_KEY: str
     
     model_config = SettingsConfigDict(
         env_file=env_files,

@@ -81,7 +81,7 @@ async def verify_google_token(id_token: str) -> Dict[str, Any]:
                 "https://oauth2.googleapis.com/tokeninfo",
                 params={"id_token": id_token}
             )
-        except httpx.RequestError as exc:
+        except httpx.RequestError:
             raise CoverAIException(
                 "Failed to reach Google authentication servers. Please try again.",
                 status_code=503,

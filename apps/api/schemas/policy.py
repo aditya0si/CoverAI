@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import Field
 from schemas import BaseSchema
 from models.policies import PolicyStatus, PolicyType
 

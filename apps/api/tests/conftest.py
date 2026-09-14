@@ -11,5 +11,8 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret")
 os.environ.setdefault("STORAGE_BUCKET", "test-bucket")
+os.environ.setdefault(
+    "FIELD_ENCRYPTION_KEY", "PqrksWPLt14l2NESVFDtdcHFAmqaMRLqTcSzl2axuFA="
+)
 
 pytest_asyncio.async_mode = "auto"
