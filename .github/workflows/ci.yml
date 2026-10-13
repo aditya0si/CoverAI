@@ -73,6 +73,11 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root --no-interaction
 
+      - name: Export ephemeral field-encryption key
+        run: |
+          KEY=$(poetry run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+          echo "FIELD_ENCRYPTION_KEY=$KEY" >> "$GITHUB_ENV"
+
       - name: Apply database migrations
         run: poetry run alembic upgrade head
 
