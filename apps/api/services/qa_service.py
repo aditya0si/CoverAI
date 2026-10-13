@@ -6,6 +6,7 @@ from sqlalchemy import select
 import google.generativeai as genai
 
 from core.config import settings
+from core.exceptions import NotFoundException
 from models import Policy, Conversation, Message, MessageRole, ContextType, AICallLog, PolicyChunk, Claim
 
 # Configure official Gemini SDK

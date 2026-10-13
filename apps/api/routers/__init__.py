@@ -8,6 +8,7 @@ from .advisors import advisors_router
 from .admin import admin_router
 from .consent import consent_router
 from .evals import evals_router
+from .insurer import insurer_router
 
 __all__ = [
     "users_router",
@@ -20,4 +21,5 @@ __all__ = [
     "admin_router",
     "consent_router",
     "evals_router",
+    "insurer_router",
 ]

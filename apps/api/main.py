@@ -32,6 +32,7 @@ from routers import (
     admin_router,
     consent_router,
     evals_router,
+    insurer_router,
 )
 
 app = FastAPI(
@@ -73,6 +74,7 @@ app.include_router(claims_router, prefix=settings.API_V1_STR)
 app.include_router(conversations_router, prefix=settings.API_V1_STR)
 app.include_router(consent_router, prefix=settings.API_V1_STR)
 app.include_router(evals_router, prefix=settings.API_V1_STR)
+app.include_router(insurer_router, prefix=settings.API_V1_STR)
 
 # Instrument FastAPI application with Prometheus telemetry
 Instrumentator().instrument(app)

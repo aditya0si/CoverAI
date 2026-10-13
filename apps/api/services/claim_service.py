@@ -8,6 +8,7 @@ task dispatch live here.
 from __future__ import annotations
 
 import logging
+import json
 from datetime import date, datetime
 from typing import Any
 from uuid import UUID
@@ -371,12 +372,46 @@ class ClaimService:
                     "extracted_text": policy.extracted_text,
                 }
 
-        return ClaimDetailResponse.model_construct(**{
-            **vars(claim),
-            "images": images_out,
-            "status_history": history_out,
-            "policy": policy_out,
-        })
+        # Explicit column mapping — avoids leaking ORM internals (e.g.
+        # _sa_instance_state) that vars(claim) would carry into the schema.
+        claim_data: dict[str, Any] = {
+            "id": claim.id,
+            "claim_number": claim.claim_number,
+            "policy_id": claim.policy_id,
+            "claimant_id": claim.claimant_id,
+            "incident_date": claim.incident_date,
+            "incident_location": claim.incident_location,
+            "incident_description": claim.incident_description,
+            "claim_type": claim.claim_type,
+            "status": claim.status,
+            "assigned_officer_id": claim.assigned_officer_id,
+            "ai_risk_score": claim.ai_risk_score,
+            "ai_summary": claim.ai_summary,
+            "ai_customer_prediction": claim.ai_customer_prediction,
+            "ai_customer_explanation": claim.ai_customer_explanation,
+            "estimated_amount": float(claim.estimated_amount or 0),
+            "approved_amount": (
+                float(claim.approved_amount) if claim.approved_amount is not None else None
+            ),
+            "created_at": claim.created_at,
+            "updated_at": claim.updated_at,
+        }
+
+        # ai_summary is stored as a JSON string — parse it for the schema
+        if isinstance(claim_data["ai_summary"], str):
+            try:
+                claim_data["ai_summary"] = json.loads(claim_data["ai_summary"])
+            except Exception:
+                claim_data["ai_summary"] = None
+
+        # Validate nested models so the response serializes without warnings
+        from schemas.claim import ClaimImageOut, AuditLogOut, PolicySummary
+
+        claim_data["images"] = [ClaimImageOut.model_validate(i) for i in images_out]
+        claim_data["status_history"] = [AuditLogOut.model_validate(h) for h in history_out]
+        claim_data["policy"] = PolicySummary.model_validate(policy_out) if policy_out else None
+
+        return ClaimDetailResponse.model_construct(**claim_data)
 
     async def list(
         self,
@@ -400,7 +435,7 @@ class ClaimService:
         """
         from services.visibility_filter import VisibilityFilter  # local to avoid circular
 
-        query = VisibilityFilter.apply(self.db, self.user, select(Claim))
+        query = await VisibilityFilter.apply(self.db, self.user, select(Claim))
 
         filters: list[Any] = []
 

@@ -2,6 +2,12 @@
 
 Welcome to the **CoverAI** monorepo workspace. This project is structured as a premium, highly optimized full-stack monorepo integrating a high-performance Python FastAPI backend, a Next.js 14 React frontend, shared schemas, and database container stacks.
 
+> **Status: working end-to-end.** The core claim lifecycle is wired and verified:
+> customer files a claim → uploads damage images → submits → AI triage runs in the
+> background → insurer pulls from the queue, self-assigns, and adjudicates. Unit,
+> integration (real Postgres + pgvector), and Playwright e2e suites all run green
+> in CI — a red build fails the pipeline.
+
 ---
 
 ## 🛠️ Monorepo Structure
@@ -96,6 +102,58 @@ We provide a `Makefile` at the root to automate common lifecycle tasks:
 
 ---
 
+## 🧪 Testing
+
+### Backend unit tests
+```bash
+cd apps/api
+pytest tests/ -v
+```
+
+### Backend integration tests (claims + insurer workflows against real Postgres)
+These exercise the actual routers over an ASGI transport. They need a
+disposable pgvector-enabled Postgres (the compose stack or the `pgvector/pgvector`
+Docker image) and skip cleanly when the variable is unset:
+```bash
+docker compose up -d postgres
+# PowerShell:  $env:TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/coverai_test"
+# bash:        export TEST_DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/coverai_test"
+cd apps/api
+pytest tests/test_claims_api.py -v
+```
+Create the test database first if needed: `docker exec coverai-postgres createdb -U postgres coverai_test`.
+
+### End-to-end (Playwright)
+```bash
+pnpm test:e2e
+```
+
+---
+
+## 🔌 API Surface (claims & insurer)
+
+| Method | Path | Role | Purpose |
+| :--- | :--- | :--- | :--- |
+| POST | `/api/v1/claims` | customer | File a new claim (draft) |
+| GET | `/api/v1/claims` | any | Role-scoped claim list |
+| GET | `/api/v1/claims/{id}` | any* | Full detail (images, history, policy) |
+| POST | `/api/v1/claims/{id}/submit` | customer | Submit for review (requires ≥1 image) |
+| PATCH | `/api/v1/claims/{id}/status` | insurer_officer/admin | Adjudicate (state machine enforced) |
+| POST | `/api/v1/claims/{id}/images` | customer | Upload damage image (JPEG/PNG/WebP, magic-byte checked) |
+| GET | `/api/v1/claims/{id}/images` | any* | List images with signed URLs |
+| GET | `/api/v1/insurer/claims/queue` | insurer_officer/admin | Shared queue (all non-draft claims) |
+| POST | `/api/v1/insurer/claims/{id}/assign-self` | insurer_officer/admin | Claim a claim (submitted → under_review) |
+| POST | `/api/v1/insurer/claims/{id}/assign-surveyor` | insurer_officer/admin | Assign field inspection |
+| POST | `/api/v1/insurer/claims/{id}/adjudicate` | insurer_officer/admin | Approve/reject convenience wrapper |
+
+\* claimant, assigned officer, advisor of the claimant, or internal role.
+
+Submitting a claim fires background `notify_insurer` + `run_ai_triage` (Gemini);
+uploading images fires `run_image_ai_analysis` (Gemini vision). All AI calls are
+consent-gated, logged to `ai_call_logs`, and counted in Prometheus metrics.
+
+---
+
 ## 🛡️ Internal Workspaces Integration
 
 *   **`@coverai/shared-types`**: Zod schemas and inferred types are defined in `packages/shared-types` and referenced in package.json:
@@ -177,10 +235,13 @@ python scripts/seed_dev.py
 Update Railway `ALLOWED_ORIGINS` to include your Vercel URL.
 
 ### CI/CD
-GitHub Actions workflow runs on PRs and main branch pushes:
-- Lint + type check frontend
-- Run backend tests
-- Auto-deploy to Railway/Vercel on main
+GitHub Actions workflow runs on PRs and main branch pushes. **The pipeline fails on
+any red check** — there are no `|| echo` escapes:
+- Lint + type check frontend (`next lint`, `tsc --noEmit`)
+- Spin up pgvector Postgres + Redis service containers
+- Apply Alembic migrations, then run the full backend test suite
+  (unit + integration)
+- Build the Next.js app
 
 ### Health Checks
 - Backend: `https://your-backend.railway.app/health`

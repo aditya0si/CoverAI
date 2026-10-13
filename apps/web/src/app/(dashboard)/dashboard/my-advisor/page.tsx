@@ -5,9 +5,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   User,
-  Send,
   Loader2,
-  Calendar,
   Ban,
   Users,
   Mail,

@@ -8,6 +8,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:e2e": "npx playwright test",
+    "test:e2e:demo": "playwright test --config=playwright.demo.config.js",
     "test:e2e:customer": "npx playwright test --project=customer",
     "test:e2e:insurer": "npx playwright test --project=insurer",
     "test:e2e:advisor": "npx playwright test --project=advisor",

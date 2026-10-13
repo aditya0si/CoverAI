@@ -120,7 +120,11 @@ async def require_claim_access(
     claim = await db.get(models.Claim, claim_id)
     if not claim:
         raise NotFoundException("Claim not found.")
-        
+
+    # Internal roles (admin, insurer officer) may access any claim.
+    if current_user.role in (models.UserRole.admin, models.UserRole.insurer_officer):
+        return claim
+
     # Check if claimant (owner)
     if claim.claimant_id == current_user.id:
         return claim

@@ -9,9 +9,7 @@ import {
   ArrowRight,
   Eye,
   Check,
-  Layers,
   Sparkles,
-  ChevronRight,
 } from 'lucide-react';
 
 export default function Home() {

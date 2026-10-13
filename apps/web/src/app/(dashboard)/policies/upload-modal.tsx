@@ -77,7 +77,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
         vehicleReg,
         insurerName,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (progressEvent: any) => {
+        (progressEvent: { loaded: number; total?: number }) => {
           const total = progressEvent.total || 0;
           if (total > 0) {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / total);
@@ -96,12 +96,13 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
 
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       setUploading(false);
       setProgress(0);
+      const errObj = err as { response?: { data?: { detail?: string; message?: string } } };
       const errMsg =
-        err.response?.data?.detail ||
-        err.response?.data?.message ||
+        errObj.response?.data?.detail ||
+        errObj.response?.data?.message ||
         'Failed to upload policy. Please verify connection and try again.';
       setError(errMsg);
     }

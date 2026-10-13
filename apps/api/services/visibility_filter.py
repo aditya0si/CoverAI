@@ -26,21 +26,20 @@ class VisibilityFilter:
     # ── public static API ─────────────────────────────────────────────────────
 
     @staticmethod
-    def apply(db: Any, user: models.User, query: Any) -> Any:
+    async def apply(db: Any, user: models.User, query: Any) -> Any:
         """Return ``query`` with a role-appropriate WHERE clause appended.
 
-        Admin role receives no filter (sees everything).  All other roles are
-        scoped to their permitted subset of claims.
+        Admin and insurer officers receive no filter — officers pull from the
+        shared queue and self-assign claims, so they must see every claim
+        (callers apply the non-draft guard where relevant).  All other roles
+        are scoped to their permitted subset of claims.
         """
-        role = str(user.role)
+        role = user.role
 
-        if role == "admin":
+        if role in (models.UserRole.admin, models.UserRole.insurer_officer):
             return query
 
-        if role in ("insurer_officer", "departmental_head"):
-            return query.where(models.Claim.assigned_officer_id == user.id)
-
-        if role == "advisor":
+        if role == models.UserRole.advisor:
             # Resolve assigned customers via a sub-query
             sub = (
                 select(models.AdvisorAssignment.customer_id)
@@ -49,16 +48,13 @@ class VisibilityFilter:
                     models.AdvisorAssignment.is_active.is_(True),
                 )
             )
-            result = db.execute(sub)
+            result = await db.execute(sub)
             assigned_ids = result.scalars().all()
+            # Empty IN clause matches nothing — advisors with no assignments
+            # see no claims, which is the intended behavior.
             return query.where(models.Claim.claimant_id.in_(assigned_ids))
 
-        if role == models.UserRole.aggregator:
-            return query.where(
-                models.Claim.assigned_department_id == user.department_id
-            )
-
-        # default: customer and any other role → own claims only
+        # default: customer, aggregator, and any future role → own claims only
         return query.where(models.Claim.claimant_id == user.id)
 
     @staticmethod
@@ -68,19 +64,16 @@ class VisibilityFilter:
         The dict maps column names to values so callers can reconstruct the
         WHERE clause without needing a live DB session.
         """
-        role = str(user.role)
+        role = user.role
 
-        if role == "admin":
+        if role == models.UserRole.admin:
             return None
 
-        if role in ("insurer_officer", "departmental_head"):
+        if role == models.UserRole.insurer_officer:
             return {"assigned_officer_id": user.id}
 
-        if role == "advisor":
+        if role == models.UserRole.advisor:
             return {"advisor_id": user.id}  # resolved via join at query time
-
-        if role == "aggregator":
-            return {"assigned_department_id": user.department_id}
 
         # default: customer / any other role
         return {"claimant_id": user.id}
