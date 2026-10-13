@@ -1,7 +1,6 @@
 import re
 import fitz  # PyMuPDF
 from datetime import datetime, timedelta
-from typing import Optional
 
 class PdfExtractionError(Exception):
     """Raised when PDF extraction fails due to encryption, empty files, or structural corruption."""

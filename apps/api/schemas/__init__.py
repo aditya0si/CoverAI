@@ -100,7 +100,7 @@ class PolicyOut(PolicyBase):
 # ==========================================
 # Claim Schemas (Imported from claim.py)
 # ==========================================
-from .claim import (
+from .claim import (  # noqa: E402
     AITriageAssessment,
     PolicySummary,
     ClaimCreate,

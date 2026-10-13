@@ -1,6 +1,6 @@
 # CoverAI — Production-Ready AI Vehicle Insurance Monorepo
 
-Welcome to the **CoverAI** monorepo workspace. This project is structured as a premium, highly optimized full-stack monorepo integrating a high-performance Python FastAPI backend, a Next.js 14 React frontend, shared schemas, and database container stacks.
+Welcome to the **CoverAI** monorepo workspace. This project is structured as a premium, highly optimized full-stack monorepo integrating a high-performance Python FastAPI backend, a Next.js 16 React frontend, shared schemas, and database container stacks.
 
 > **Status: working end-to-end.** The core claim lifecycle is wired and verified:
 > customer files a claim → uploads damage images → submits → AI triage runs in the
@@ -15,7 +15,7 @@ Welcome to the **CoverAI** monorepo workspace. This project is structured as a p
 ```
 coverai/
 ├── apps/
-│   ├── web/                → Next.js 14 frontend (App Router, strict TypeScript, Tailwind CSS)
+│   ├── web/                → Next.js 16 frontend (App Router, strict TypeScript, Tailwind CSS)
 │   └── api/                → FastAPI backend (Python 3.11, Poetry, SQLAlchemy 2.0 Async)
 ├── packages/
 │   ├── shared-types/       → Centralized Zod schemas & types for validation (User, Vehicle, Policy, Claim)
@@ -194,8 +194,15 @@ GEMINI_API_KEY=your_key
 JWT_SECRET=generate_with_openssl_rand_hex_32
 ALLOWED_ORIGINS=https://your-app.vercel.app
 STORAGE_BUCKET=coverai-documents-bucket
-FIELD_ENCRYPTION_KEY=generate_with_fernet
+FIELD_ENCRYPTION_KEY=REQUIRED
 ```
+
+> **`FIELD_ENCRYPTION_KEY` is REQUIRED — no default is shipped.** The backend
+> refuses to start (and document encryption raises) if it is missing or is not a
+> valid Fernet key. Generate one with:
+> ```bash
+> python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+> ```
 
 #### Vercel (Frontend)
 Set in Vercel dashboard → Environment Variables:
@@ -235,17 +242,32 @@ python scripts/seed_dev.py
 Update Railway `ALLOWED_ORIGINS` to include your Vercel URL.
 
 ### CI/CD
-GitHub Actions workflow runs on PRs and main branch pushes. **The pipeline fails on
-any red check** — there are no `|| echo` escapes:
-- Lint + type check frontend (`next lint`, `tsc --noEmit`)
-- Spin up pgvector Postgres + Redis service containers
-- Apply Alembic migrations, then run the full backend test suite
-  (unit + integration)
-- Build the Next.js app
+`.github/workflows/ci.yml` runs on pull requests and pushes to `main`. The workflow
+requests read-only `contents` permission and cancels superseded runs on the same
+ref. It defines two jobs, and every step fails the job on error (no fallbacks):
+
+**API job** — `apps/api`, Python 3.12, Poetry 2.2.1, 20-minute timeout, with
+pgvector Postgres + Redis service containers:
+- `poetry check --lock` — verifies `pyproject.toml` and `poetry.lock` are in sync
+- `poetry install --no-root --no-interaction` — installs locked dependencies
+- `poetry run alembic upgrade head` — applies migrations to the service database
+- `poetry run pytest -q` — test suite (unit + integration)
+- `poetry run ruff check .` — Python lint
+- `poetry run python -m pip_audit` — dependency vulnerability audit
+
+**Web job** — pnpm 9.1.4, Node 20, 15-minute timeout:
+- `pnpm install --frozen-lockfile` — installs from the committed lockfile
+- `pnpm --filter web lint`
+- `pnpm --filter web exec tsc --noEmit`
+- `pnpm --filter web build`
+- `pnpm audit --audit-level=high` — fails on any high or critical advisory
+
+This repository contains no automatic deployment step; deployment is performed
+manually following the steps below.
 
 ### Health Checks
 - Backend: `https://your-backend.railway.app/health`
 - Frontend: `https://your-app.vercel.app`
 
 ### Troubleshooting
-See [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md) for local development.
+See [EXECUTION_GUIDE.md](./docs/EXECUTION_GUIDE.md) for local development.

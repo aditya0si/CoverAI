@@ -1,3 +1,16 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+overrides:
+  # Transitive security patches (see `pnpm audit`). Scoped by major so each
+  # consumer keeps its expected API surface.
+  brace-expansion@1: 1.1.18
+  brace-expansion@2: 2.1.4
+  brace-expansion@5: 5.0.9
+  glob@10: 10.5.0
+  js-yaml@4: 4.3.2
+  nanoid@3: 3.3.18
+  postcss@8: 8.5.23
+  postcss-selector-parser@6: 6.1.3
+  form-data@4: 4.0.6

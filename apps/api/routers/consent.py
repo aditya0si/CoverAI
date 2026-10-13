@@ -3,8 +3,8 @@ import json
 import logging
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status, Request, BackgroundTasks
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, Request, BackgroundTasks
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -13,7 +13,6 @@ from core.security import get_current_user
 from core.exceptions import CoverAIException, NotFoundException
 from core.audit import log_action
 from core.storage import get_storage_backend
-from core.encryption import hash_phone
 import models
 
 logger = logging.getLogger("uvicorn.error")
@@ -33,8 +32,7 @@ class ConsentRecordResponse(BaseModel):
     granted_at: datetime
     revoked_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DataExportRequestResponse(BaseModel):
     request_id: uuid.UUID

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import inspect
 import sys
-import unittest.mock
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock, AsyncMock, patch
@@ -81,8 +80,8 @@ class TestTriageServiceModuleImports:
                     outside_function.append(line)
 
         module_level_imports = [
-            l for l in outside_function
-            if l.strip().startswith("from core.metrics import")
+            line for line in outside_function
+            if line.strip().startswith("from core.metrics import")
         ]
         assert module_level_imports, (
             "triage_service.py must import ai_calls_total (and related) "
@@ -268,7 +267,7 @@ class TestClaimServiceTransition:
         from services.claim_service import ClaimService
 
         claim_id = "claim-uuid"
-        claim = self._make_claim(claim_id, "submitted")  # whatever, submit checks draft
+        self._make_claim(claim_id, "submitted")  # whatever, submit checks draft
 
         self.db.get.return_value = self._make_claim(claim_id, "draft")
 

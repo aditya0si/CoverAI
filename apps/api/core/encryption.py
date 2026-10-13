@@ -1,21 +1,19 @@
-import os
 import hashlib
 from cryptography.fernet import Fernet
 
-# Field encryption key should be a base64-encoded 32-byte key.
-# We will check the environment directly first, then fall back to a standard dev key if not set.
-FIELD_ENCRYPTION_KEY = os.getenv(
-    "FIELD_ENCRYPTION_KEY", 
-    "T-Bf6tYh6Xw46U_ZtZ-0X1UjWvTjQk-mUf0Vw1Z4X4o="
-)
+from core.config import settings
 
+# Single source of truth for the field encryption key: core.config.settings.
+# A missing or invalid key must fail loudly instead of silently generating a
+# throwaway key (which would make encrypted data undecryptable across restarts).
 try:
-    _fernet = Fernet(FIELD_ENCRYPTION_KEY.encode())
-except Exception:
-    # If the key is invalid or not base64, generate a temporary one for safety
-    import base64
-    temp_key = base64.urlsafe_b64encode(hashlib.sha256(FIELD_ENCRYPTION_KEY.encode()).digest())
-    _fernet = Fernet(temp_key)
+    _fernet = Fernet(settings.FIELD_ENCRYPTION_KEY.encode())
+except Exception as exc:
+    raise RuntimeError(
+        "FIELD_ENCRYPTION_KEY is missing or is not a valid Fernet key. "
+        "Generate one with: python -c "
+        "\"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+    ) from exc
 
 def encrypt(val: str) -> str:
     """

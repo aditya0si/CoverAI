@@ -28,11 +28,11 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
+/lib64/
+parts/
 !apps/web/src/lib/
 !apps/web/src/lib/**
-lib64/
-parts/
 sdist/
 var/
 wheels/
@@ -108,3 +108,4 @@ debug_out.txt
 e2e_out.txt
 sampletext.txt.txt
 /.hermes/
+.vercel

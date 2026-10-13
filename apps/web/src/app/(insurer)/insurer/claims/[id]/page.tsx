@@ -452,7 +452,7 @@ export default function InsurerClaimReviewPage() {
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-extrabold text-white tracking-tight">{claim.claim_number}</h1>
+            <h1 className="text-xl font-extrabold text-[#191919] tracking-tight">{claim.claim_number}</h1>
             <StatusBadge status={claim.status} />
           </div>
           <p className="text-xs text-slate-500 mt-0.5">

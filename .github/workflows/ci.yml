@@ -6,9 +6,21 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-and-test:
+  api:
+    name: API (Python)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
 
     services:
       postgres:
@@ -46,6 +58,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install Poetry
+        run: pip install poetry==2.2.1
+
+      - name: Validate lockfile
+        run: poetry check --lock
+
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction
+
+      - name: Apply database migrations
+        run: poetry run alembic upgrade head
+
+      - name: Run tests
+        run: poetry run pytest -q
+
+      - name: Lint (ruff)
+        run: poetry run ruff check .
+
+      - name: Audit dependencies (pip-audit)
+        run: poetry run python -m pip_audit
+
+  web:
+    name: Web (Node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -53,11 +104,8 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Setup pnpm
-        run: corepack enable && corepack prepare pnpm@latest --activate
-
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Lint web
         run: pnpm --filter web lint
@@ -65,28 +113,8 @@ jobs:
       - name: Type check web
         run: pnpm --filter web exec tsc --noEmit
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Python dependencies
-        run: |
-          pip install --upgrade pip
-          pip install \
-            fastapi 'uvicorn[standard]' pymupdf openai google-generativeai python-dotenv \
-            'sqlalchemy[asyncio]' alembic psycopg2-binary asyncpg pydantic-settings pydantic \
-            python-multipart passlib bcrypt pyjwt redis slowapi prometheus-fastapi-instrumentator \
-            apscheduler cryptography python-json-logger httpx pgvector \
-            pytest pytest-asyncio
-
-      - name: Apply database migrations
-        working-directory: apps/api
-        run: alembic upgrade head
-
-      - name: Run backend tests
-        working-directory: apps/api
-        run: pytest tests/ -v --tb=short
-
-      - name: Build web app
+      - name: Build web
         run: pnpm --filter web build
+
+      - name: Audit web dependencies
+        run: pnpm audit --audit-level=high

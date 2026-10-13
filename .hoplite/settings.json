@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "ports": {"preview": 3000, "additional": {}},
+  "scripts": {
+    "setup": {"enabled": true, "command": "pnpm install"},
+    "run": {"enabled": true, "command": "tail -f /dev/null | pnpm --filter web dev"},
+    "archive": {"enabled": true, "command": null},
+    "check": {"enabled": true, "command": "pnpm --filter web exec tsc --noEmit"}
+  },
+  "mcpServers": []
+}

@@ -130,11 +130,11 @@ export default function AdvisorClaimsOverviewPage() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-900 pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black text-[#191919] tracking-tight flex items-center gap-2.5">
             <FileText className="w-6 h-6 text-violet-400" />
             <span>Claims Overview</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#6E6862] mt-1">
             {isLoading
               ? 'Loading claims across your portfolio…'
               : `${allClaims.length} total claims across ${customers.length} assigned clients.`}

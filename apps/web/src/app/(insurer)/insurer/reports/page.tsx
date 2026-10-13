@@ -6,8 +6,8 @@ export default function InsurerReportsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Reports</h1>
-        <p className="text-slate-400 text-sm mt-1">Analytics and performance metrics for claims processing.</p>
+        <h1 className="text-2xl font-extrabold text-[#191919] tracking-tight">Reports</h1>
+        <p className="text-[#6E6862] text-sm mt-1">Analytics and performance metrics for claims processing.</p>
       </div>
 
       {/* Coming Soon */}
@@ -22,8 +22,8 @@ export default function InsurerReportsPage() {
         </div>
 
         <div className="text-center space-y-2 max-w-sm">
-          <h2 className="text-xl font-extrabold text-white">Coming Soon</h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <h2 className="text-xl font-extrabold text-[#191919]">Coming Soon</h2>
+          <p className="text-[#6E6862] text-sm leading-relaxed">
             The reports module is under development. It will include claim settlement rates,
             officer performance metrics, risk distribution charts, and monthly trend analysis.
           </p>

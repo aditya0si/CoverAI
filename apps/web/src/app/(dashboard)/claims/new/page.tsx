@@ -224,11 +224,11 @@ export default function NewClaimPage() {
       
       {/* Page Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+        <h1 className="text-xl sm:text-2xl font-black text-[#191919] tracking-tight flex items-center gap-2.5">
           <FilePlus className="w-6 h-6 text-[#16A34A]" />
           <span>File a Claim</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">Submit your vehicle accident incident information and images to begin claim triage review.</p>
+        <p className="text-xs text-[#6E6862] mt-1">Submit your vehicle accident incident information and images to begin claim triage review.</p>
       </div>
 
       {/* Steps Indicator Progress Stepper */}
@@ -255,7 +255,7 @@ export default function NewClaimPage() {
               {step > s.idx ? '✓' : s.idx}
             </div>
             <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${
-              step >= s.idx ? 'text-white' : 'text-slate-500'
+              step >= s.idx ? 'text-[#191919]' : 'text-slate-500'
             }`}>
               {s.label}
             </span>

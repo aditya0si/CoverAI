@@ -96,13 +96,13 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
 
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: unknown) {
       setUploading(false);
       setProgress(0);
-      const errObj = err as { response?: { data?: { detail?: string; message?: string } } };
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
       const errMsg =
-        errObj.response?.data?.detail ||
-        errObj.response?.data?.message ||
+        e.response?.data?.detail ||
+        e.response?.data?.message ||
         'Failed to upload policy. Please verify connection and try again.';
       setError(errMsg);
     }

@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Shield, Cpu, Clock, ShieldCheck } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { getPolicies } from '@/lib/api-client';
+import { OfflineNotice, LoadingRows } from '@/components/api-status';
 import VaultTab from './vault/page';
 import AIAdvisorTab from './ai-advisor/page';
 import ClaimsTab from './claims/page';
@@ -22,6 +25,14 @@ export default function DashboardPage() {
   const { user } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabId>('vault');
   const name = user?.full_name?.split(' ')[0] || 'User';
+
+  const { isLoading, isError } = useQuery({
+    queryKey: ['policies'],
+    queryFn: () => getPolicies(),
+    retry: 1,
+  });
+
+  const isOffline = !process.env.NEXT_PUBLIC_API_URL || isError;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -67,10 +78,18 @@ export default function DashboardPage() {
 
       {/* ── Active Tab Panel Content ──────────────────────────────────────── */}
       <div className="w-full">
-        {activeTab === 'vault' && <VaultTab />}
-        {activeTab === 'ai' && <AIAdvisorTab />}
-        {activeTab === 'claims' && <ClaimsTab />}
-        {activeTab === 'privacy' && <PrivacyTab />}
+        {isOffline ? (
+          <OfflineNotice />
+        ) : isLoading ? (
+          <LoadingRows n={3} />
+        ) : (
+          <>
+            {activeTab === 'vault' && <VaultTab />}
+            {activeTab === 'ai' && <AIAdvisorTab />}
+            {activeTab === 'claims' && <ClaimsTab />}
+            {activeTab === 'privacy' && <PrivacyTab />}
+          </>
+        )}
       </div>
     </div>
   );

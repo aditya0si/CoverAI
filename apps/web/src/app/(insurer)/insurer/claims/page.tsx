@@ -184,8 +184,8 @@ function InsurerClaimsQueueContent() {
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Claim Queue</h1>
-        <p className="text-slate-400 text-sm mt-1">All submitted and active claims awaiting review.</p>
+        <h1 className="text-2xl font-extrabold text-[#191919] tracking-tight">Claim Queue</h1>
+        <p className="text-[#6E6862] text-sm mt-1">All submitted and active claims awaiting review.</p>
       </div>
 
       {/* Filters */}

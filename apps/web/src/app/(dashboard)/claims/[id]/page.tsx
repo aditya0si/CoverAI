@@ -53,8 +53,8 @@ export default function ClaimDetailPage() {
         <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center border border-rose-500/10 mx-auto">
           <FileQuestion className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-bold text-white">Claim Not Found</h3>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <h3 className="text-base font-bold text-[#191919]">Claim Not Found</h3>
+        <p className="text-xs text-[#6E6862] max-w-sm mx-auto">
           The claim you are looking for does not exist or you do not have permission to view it.
         </p>
         <button onClick={() => router.push('/claims')} className="text-xs font-semibold text-blue-400 hover:underline">

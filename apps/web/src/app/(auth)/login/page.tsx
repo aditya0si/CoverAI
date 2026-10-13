@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
-import { Mail, Lock, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { login, loginWithGoogle } from '@/lib/auth';
 
 declare global {
@@ -43,6 +43,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -181,27 +182,30 @@ function LoginForm() {
         </div>
 
         <div className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <label htmlFor="password" className="block text-xs font-medium text-[#191919]">
-              Password
-            </label>
-            <a href="#" className="text-xs font-medium text-[#6E6862] hover:text-[#191919] transition-colors">
-              Forgot?
-            </a>
-          </div>
+          <label htmlFor="password" className="block text-xs font-medium text-[#191919]">
+            Password
+          </label>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#8C847B]">
               <Lock className="w-4 h-4" />
             </span>
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF8F5] border border-[#E2DDD4] rounded-xl text-xs text-[#191919] placeholder:text-[#8C847B] focus:outline-none focus:border-[#191919] focus:ring-1 focus:ring-[#191919] transition-all"
+              className="w-full pl-10 pr-10 py-2.5 bg-[#FAF8F5] border border-[#E2DDD4] rounded-xl text-xs text-[#191919] placeholder:text-[#8C847B] focus:outline-none focus:border-[#191919] focus:ring-1 focus:ring-[#191919] transition-all"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#8C847B] hover:text-[#191919] transition-colors cursor-pointer"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 

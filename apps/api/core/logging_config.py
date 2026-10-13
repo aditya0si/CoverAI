@@ -36,6 +36,6 @@ def setup_logging():
     
     # Secure and format specific system loggers
     for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"]:
-        l = logging.getLogger(logger_name)
-        l.handlers = [handler]
-        l.propagate = False
+        logger = logging.getLogger(logger_name)
+        logger.handlers = [handler]
+        logger.propagate = False
