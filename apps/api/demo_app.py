@@ -33,7 +33,7 @@ from demo.errors import (
 )
 from demo.extraction import ParsingExecutor
 from demo.router import DemoContext, router as demo_router
-from demo.security import CSRF_HEADER, SESSION_COOKIE
+from demo.security import SESSION_COOKIE
 from demo.service import DemoService
 from demo.store import DemoStore
 

@@ -11,7 +11,6 @@ from fastapi.responses import JSONResponse, Response
 
 from .config import DemoSettings
 from .contracts import (
-    Document,
     ExplainRequest,
     Explanation,
     Handoff,
@@ -25,7 +24,6 @@ from .errors import ModelUnavailable, SessionMissing, ValidationError
 from .handoffs import create_handoff, list_inbox
 from .multipart import parse_policy_upload
 from .security import (
-    CSRF_HEADER,
     SESSION_COOKIE,
     SESSION_COOKIE_PATH,
     check_csrf,

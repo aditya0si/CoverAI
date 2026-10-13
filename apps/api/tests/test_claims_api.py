@@ -299,7 +299,6 @@ async def test_full_claim_lifecycle(api_client, seeded):
 async def test_customer_cannot_see_other_customers_claims(api_client, seeded):
     """Visibility: a second customer must not see the first customer's claim."""
     customer = seeded["customer"]
-    officer = seeded["officer"]
     headers = _auth_headers(customer.id, "customer")
 
     resp = await api_client.get("/api/v1/claims", headers=headers)

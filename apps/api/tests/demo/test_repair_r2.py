@@ -24,14 +24,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from uuid import uuid4
 
-import pytest
 from fastapi.testclient import TestClient
 
 import demo.store as store_mod
 import fixtures
 from demo.config import DemoLimits, DemoSettings
 from demo.contracts import Document, PageText
-from demo.errors import DemoError, InvalidDocument, SessionExpired
+from demo.errors import DemoError, InvalidDocument
 from demo.security import digest_capability
 from demo.store import DemoStore, PreparedResult, StoredResponse
 from demo_app import create_demo_app

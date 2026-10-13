@@ -23,6 +23,9 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret")
 os.environ.setdefault("STORAGE_BUCKET", "test-bucket")
+# Google OAuth client id: left unset for the suite so a developer .env placeholder
+# value cannot leak into tests; tests that need a client id patch settings directly.
+os.environ.setdefault("GOOGLE_CLIENT_ID", "")
 
 
 def _test_field_encryption_key() -> str:

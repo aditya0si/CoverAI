@@ -79,7 +79,12 @@ export function useDemoSession() {
   // request that belonged to the previous one, so a successful replacement,
   // reset or expiry cancels in-flight work instead of merely ignoring its body.
   const abortRef = useRef<AbortController | null>(null);
-  if (!abortRef.current) abortRef.current = new AbortController();
+  // Initialize on mount (not during render): requests read abortRef.current?.signal
+  // and rotateGeneration() replaces the controller per generation. Declared before
+  // the resume effect below, so the controller exists before any request starts.
+  useEffect(() => {
+    if (!abortRef.current) abortRef.current = new AbortController();
+  }, []);
 
   const clearState = useCallback(() => {
     setDocument(null);

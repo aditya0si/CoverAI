@@ -23,7 +23,7 @@ def test_session_needs_no_production_settings() -> None:
     code = (
         "import demo_app; "
         "app = demo_app.create_demo_app(); "
-        "paths = {r.path for r in app.routes}; "
+        "paths = set(app.openapi()['paths']); "
         "assert '/api/v1/demo/session' in paths; "
         "print('demo-import-ok')"
     )

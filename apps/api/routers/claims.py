@@ -7,7 +7,6 @@ validates input, resolves access, and maps service results to responses.
 """
 import uuid
 from datetime import date
-from typing import Any
 
 from fastapi import APIRouter, Depends, UploadFile, File, BackgroundTasks, Request, Query
 from sqlalchemy import select
@@ -15,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from core.security import get_current_user, require_role
-from core.exceptions import CoverAIException, NotFoundException, ForbiddenException
+from core.exceptions import NotFoundException, ForbiddenException
 from core.background_tasks import dispatch
 from schemas.claim import (
     ClaimCreate,
