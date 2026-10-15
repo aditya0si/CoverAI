@@ -46,8 +46,7 @@ COPY . /app
 # Harden security: Run as non-root user
 RUN groupadd -g 10001 coverai && \
     useradd -u 10001 -g coverai -s /bin/sh coverai && \
-    chown -R coverai:coverai /app && \r
-    chmod +x /app/entrypoint.sh
+    chown -R coverai:coverai /app
 USER coverai
 
 EXPOSE 8000
@@ -58,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Render EXECs dockerCommand (no shell), so the migrate-then-serve sequence lives in
 # the image instead: entrypoint.sh applies migrations, then execs uvicorn on $PORT.
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]
