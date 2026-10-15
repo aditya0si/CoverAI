@@ -38,16 +38,17 @@ services:
     healthCheckPath: /health
     # Run the Alembic migrations (they create the pgvector extension and all tables,
     # and are idempotent) before serving traffic on Render's port.
-    dockerCommand: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    # No dockerCommand: Render EXECs it rather than shell-parsing it, so a chained "a && b"
+    # fails (exit 127). The image ENTRYPOINT applies migrations, then serves on $PORT.
     envVars:
       - key: ENV
         value: production
       - key: DEBUG
         value: "false"
+      # Neon (free, no expiry, pgvector). Render free Postgres expires 30 days after
+      # creation, so the database is deliberately outside this blueprint.
       - key: DATABASE_URL
-        fromDatabase:
-          name: coverai-db
-          property: connectionString
+        sync: false
       - key: REDIS_URL
         fromService:
           name: coverai-redis

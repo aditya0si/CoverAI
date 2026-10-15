@@ -46,7 +46,8 @@ COPY . /app
 # Harden security: Run as non-root user
 RUN groupadd -g 10001 coverai && \
     useradd -u 10001 -g coverai -s /bin/sh coverai && \
-    chown -R coverai:coverai /app
+    chown -R coverai:coverai /app && \r
+    chmod +x /app/entrypoint.sh
 USER coverai
 
 EXPOSE 8000
@@ -55,5 +56,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Railway provides $PORT automatically (fall back to 8000 for local Docker)
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Render EXECs dockerCommand (no shell), so the migrate-then-serve sequence lives in
+# the image instead: entrypoint.sh applies migrations, then execs uvicorn on $PORT.
+ENTRYPOINT ["/app/entrypoint.sh"]
