@@ -2,7 +2,57 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 import tempfile
+
 from core.config import settings
+
+
+class StoragePathError(ValueError):
+    """Raised when a storage key is unsafe or would resolve outside the backend root."""
+
+
+_CONTROL_CHARS = frozenset(chr(code) for code in range(32)) | {"\x7f"}
+
+
+def _is_unsafe_key(key: str) -> bool:
+    """A storage key must be a relative POSIX path inside the backend root."""
+    if not isinstance(key, str) or not key.strip():
+        return True
+    if any(char in _CONTROL_CHARS for char in key):
+        return True
+    # Treat both separator flavours as separators so Windows-style traversal is
+    # rejected on POSIX and vice versa.
+    candidate = key.replace("\\", "/")
+    if candidate.startswith("/") or os.path.isabs(key):
+        return True
+    if Path(key).is_absolute() or Path(candidate).is_absolute():
+        return True
+    drive, _ = os.path.splitdrive(key)
+    if drive:
+        return True
+    components = candidate.split("/")
+    if any(component in ("", ".", "..") for component in components):
+        return True
+    return False
+
+
+def contained_path(base_dir: Path, key: str) -> Path:
+    """Resolve ``key`` under ``base_dir``, refusing anything that escapes it.
+
+    Containment is established on the *final resolved* path, so ``..`` segments
+    and symlinks that point outside the storage root are both refused.
+    """
+    if _is_unsafe_key(key):
+        raise StoragePathError("Unsafe storage key rejected.")
+
+    root = Path(base_dir).resolve()
+    resolved = (root / key.replace("\\", "/")).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        raise StoragePathError("Storage key resolves outside the storage root.") from None
+    if resolved == root:
+        raise StoragePathError("Storage key must name a file inside the storage root.")
+    return resolved
 
 class StorageBackend(ABC):
     """Abstract base class representing a storage backend for policies and other documents."""
@@ -43,22 +93,25 @@ class LocalStorageBackend(StorageBackend):
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def upload(self, file_bytes: bytes, path: str) -> str:
-        full_path = self.base_dir / path
+        full_path = self._contained(path)
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.write_bytes(file_bytes)
         return self.get_url(path)
 
     def get_url(self, path: str) -> str:
-        full_path = self.base_dir / path
-        return full_path.as_uri()
+        return self._contained(path).as_uri()
 
     def delete(self, path: str) -> None:
-        full_path = self.base_dir / path
+        full_path = self._contained(path)
         if full_path.exists():
             try:
                 full_path.unlink()
             except Exception:
                 pass
+
+    def _contained(self, path: str) -> Path:
+        """Resolve a storage key, refusing anything that escapes ``base_dir``."""
+        return contained_path(self.base_dir, path)
 
 
 class S3StorageBackend(StorageBackend):

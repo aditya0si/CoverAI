@@ -2,6 +2,7 @@ import uuid
 import random
 import string
 from datetime import datetime, timedelta
+from pathlib import Path, PureWindowsPath
 from typing import List
 from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,8 +20,50 @@ from schemas.policy import PolicyUploadResponse, PolicyDetailOut
 
 policies_router = APIRouter(prefix="/policies", tags=["Policies"])
 
+#: Longest client filename we are willing to parse. Real PDF basenames are far
+#: shorter; the cap keeps the validator linear on hostile input.
+MAX_PDF_FILENAME_LENGTH = 255
+
+
 def generate_policy_number() -> str:
     return "POL-" + "".join(random.choices(string.digits, k=8))
+
+
+def policy_storage_path(policy_id: uuid.UUID) -> str:
+    """Canonical storage key for a policy PDF.
+
+    The key is entirely server-generated: the client filename never reaches the
+    storage layer, so no multipart value can influence where bytes land.
+    """
+    return f"policies/{policy_id}/policy.pdf"
+
+
+def is_safe_pdf_filename(filename: str | None) -> bool:
+    """True only for a plain ``.pdf`` basename with no path semantics.
+
+    Accepted: ``policy.pdf``, ``Apex Policy 2026.PDF``.
+    Rejected: anything carrying a POSIX or Windows separator, a ``..`` path
+    component, an absolute or drive-prefixed form, or a control character.
+    """
+    if not isinstance(filename, str) or not filename:
+        return False
+    if len(filename) > MAX_PDF_FILENAME_LENGTH:
+        return False
+    if any(ord(char) < 32 or ord(char) == 127 for char in filename):
+        return False
+    # ``..`` as a path component is traversal, in either separator flavour.
+    if ".." in filename.replace("\\", "/").split("/"):
+        return False
+    # Both separator flavours, regardless of the host OS running the API.
+    if "/" in filename or "\\" in filename:
+        return False
+    if filename.startswith(("/", "\\")) or Path(filename).is_absolute():
+        return False
+    if PureWindowsPath(filename).is_absolute() or PureWindowsPath(filename).drive:
+        return False
+    if not filename.lower().endswith(".pdf"):
+        return False
+    return True
 
 
 @policies_router.post("/upload", response_model=PolicyUploadResponse, status_code=status.HTTP_201_CREATED)
@@ -32,10 +75,12 @@ async def upload_policy(
     current_user: models.User = Depends(require_role("customer")),
     db: AsyncSession = Depends(get_db)
 ):
-    # 1. Validate: PDF check and size limit (20MB)
-    if not file.filename.lower().endswith(".pdf") and file.content_type != "application/pdf":
+    # 1. Validate: the client filename must be a plain .pdf basename. The
+    # extension gate stands on its own; Content-Type is never treated as proof
+    # of format, and the raw name is never echoed back to the client.
+    if not is_safe_pdf_filename(file.filename):
         raise CoverAIException("Invalid file format. Only PDF documents are allowed.", status_code=422, error_code="VALIDATION_ERROR")
-    
+
     # Read bytes to check file size
     file_bytes = await file.read()
     max_size = 20 * 1024 * 1024 # 20MB
@@ -61,9 +106,10 @@ async def upload_policy(
     policy_num = generate_policy_number()
     policy_id = uuid.uuid4()
     
-    # Upload to storage backend
+    # Upload to storage backend on a canonical, server-generated key. The
+    # client-supplied filename never participates in the storage path.
     storage = get_storage_backend()
-    storage_path = f"policies/{policy_id}/{file.filename}"
+    storage_path = policy_storage_path(policy_id)
     uploaded_url = storage.upload(file_bytes, storage_path)
 
     # 5. Populate and create database record
