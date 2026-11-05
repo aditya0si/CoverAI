@@ -2,11 +2,17 @@
 
 Welcome to the **CoverAI** monorepo workspace. This project is structured as a premium, highly optimized full-stack monorepo integrating a high-performance Python FastAPI backend, a Next.js 16 React frontend, shared schemas, and database container stacks.
 
-> **Status: working end-to-end.** The core claim lifecycle is wired and verified:
-> customer files a claim → uploads damage images → submits → AI triage runs in the
-> background → insurer pulls from the queue, self-assigns, and adjudicates. Unit,
-> integration (real Postgres + pgvector), and Playwright e2e suites all run green
-> in CI — a red build fails the pipeline.
+> **Status: working end-to-end, with the verification boundary stated.** The core claim
+> lifecycle is wired and verified: customer files a claim → uploads damage images →
+> submits → AI triage runs in the background → insurer pulls from the queue,
+> self-assigns, and adjudicates.
+>
+> What CI runs on every push: **277 backend tests** against a real Postgres + pgvector
+> service, ruff, and a dependency audit, plus the web app's lint, typecheck, build and
+> audit. What CI does **not** run: the Playwright e2e suites (customer / insurer /
+> advisor role projects) — they are a local target, `pnpm test:e2e`. An
+> earlier version of this file claimed they ran in CI; they did not, and a status
+> paragraph that overstates its own pipeline is the one defect a reviewer will find.
 
 ---
 
